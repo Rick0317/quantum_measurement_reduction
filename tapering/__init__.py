@@ -1,7 +1,7 @@
 """
-Bliss module for quantum measurement reduction.
+Tapering module for quantum measurement reduction.
 
-This module provides functionality for implementing Bliss techniques
+This module provides functionality for implementing tapering techniques
 used in quantum measurement reduction algorithms.
 """
 
