@@ -13,10 +13,16 @@ A comprehensive Python package for implementing various quantum measurement redu
 
 ## Installation
 
+### Quick Install (Recommended)
+
+```bash
+pip install git+https://github.com/Rick0317/quantum_measurement_reduction.git
+```
+
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/quantum_measurement_reduction.git
+git clone https://github.com/Rick0317/quantum_measurement_reduction.git
 cd quantum_measurement_reduction
 pip install -e .
 ```
@@ -24,9 +30,25 @@ pip install -e .
 ### Development Installation
 
 ```bash
-git clone https://github.com/yourusername/quantum_measurement_reduction.git
+git clone https://github.com/Rick0317/quantum_measurement_reduction.git
 cd quantum_measurement_reduction
 pip install -e ".[dev]"
+```
+
+### Verify Installation
+
+After installation, run the verification script:
+
+```bash
+python verify_installation.py
+```
+
+### Quick Example
+
+Run the Ghost Pauli example:
+
+```bash
+python ghost_pauli_example.py
 ```
 
 ## Quick Start
@@ -191,12 +213,42 @@ If you use this package in your research, please cite:
 }
 ```
 
+## Getting Started
+
+### Installation Files
+
+- **`INSTALLATION_GUIDE.md`**: Comprehensive installation and usage guide
+- **`verify_installation.py`**: Script to verify your installation
+- **`ghost_pauli_example.py`**: Complete example showing Ghost Pauli usage
+
+### Quick Start Steps
+
+1. **Install the package:**
+   ```bash
+   pip install git+https://github.com/Rick0317/quantum_measurement_reduction.git
+   ```
+
+2. **Verify installation:**
+   ```bash
+   python verify_installation.py
+   ```
+
+3. **Run example:**
+   ```bash
+   python ghost_pauli_example.py
+   ```
+
+4. **Use in your project:**
+   ```python
+   from quantum_measurement_reduction.ghost_pauli import update_decomp_w_ghost_paulis_sparse
+   ```
+
 ## Support
 
 For questions, bug reports, or feature requests, please:
 
 1. Check the [documentation](https://quantum-measurement-reduction.readthedocs.io/)
-2. Search existing [issues](https://github.com/yourusername/quantum_measurement_reduction/issues)
+2. Search existing [issues](https://github.com/Rick0317/quantum_measurement_reduction/issues)
 3. Create a new issue if needed
 
 ## Changelog
