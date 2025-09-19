@@ -15,7 +15,7 @@ This package provides:
 Example usage:
     from quantum_measurement_reduction import ghost_pauli
     from quantum_measurement_reduction.ghost_pauli import update_decomp_w_ghost_paulis_sparse
-    
+
     # Use the sparse ghost pauli function
     updated_decomp = update_decomp_w_ghost_paulis_sparse(psi_sparse, N, original_decomp)
 """
@@ -24,7 +24,7 @@ Example usage:
 from . import ghost_pauli
 from . import shared_pauli
 from . import entities
-from . import SymplecticVectorSpace
+from . import symplectic_vector_space
 from . import utils
 from . import tapering
 from . import virial
@@ -47,9 +47,14 @@ from .entities import (
     PauliOp
 )
 
-from .SymplecticVectorSpace import (
+from .symplectic_vector_space import (
     SpaceFVector,
     vector_2_pauli
+)
+
+from .bliss import (
+    bliss_two_body,
+    bliss_three_body_indices_filtered
 )
 
 # Package metadata
@@ -61,14 +66,14 @@ __description__ = "A package for quantum measurement reduction techniques"
 __all__ = [
     # Main modules
     'ghost_pauli',
-    'shared_pauli', 
+    'shared_pauli',
     'entities',
     'SymplecticVectorSpace',
     'utils',
     'tapering',
     'virial',
     'bliss',
-    
+
     # Key functions
     'update_decomp_w_ghost_paulis_sparse',
     'sparse_variance',
@@ -79,10 +84,13 @@ __all__ = [
     'PauliOp',
     'SpaceFVector',
     'vector_2_pauli',
-    
+    'bliss_two_body',
+    'bliss_three_body_indices_filtered',
+
     # Metadata
     '__version__',
     '__author__',
     '__email__',
     '__description__'
 ]
+

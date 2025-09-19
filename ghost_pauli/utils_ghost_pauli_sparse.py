@@ -12,7 +12,7 @@ from openfermion import (
     QubitOperator
 )
 from entities.paulis import PauliString, pauli_ops_to_qop
-from SymplecticVectorSpace.space_F_definition import SpaceFVector, vector_2_pauli
+from symplectic_vector_space.space_F_definition import SpaceFVector, vector_2_pauli
 from itertools import product
 
 
@@ -141,22 +141,22 @@ def sparse_variance(operator, state):
     """
     Compute variance of operator with a sparse state matrix.
     This is a sparse matrix version of the variance calculation.
-    
+
     Args:
         operator: scipy.sparse.spmatrix - The operator whose variance is desired
         state: scipy.sparse.spmatrix - A sparse matrix representing a state vector (shape: (1, dim))
-        
+
     Returns:
         A complex number giving the variance
     """
     if not isinstance(state, sp.spmatrix):
         raise ValueError("State must be a sparse matrix")
-    
+
     # For state vectors, we use the formula: Var(O) = <ψ|O^2|ψ> - <ψ|O|ψ>^2
     op_squared = operator @ operator
     expectation_op = sparse_expectation(operator, state)
     expectation_op_squared = sparse_expectation(op_squared, state)
-    
+
     return expectation_op_squared - expectation_op ** 2
 
 
@@ -164,21 +164,21 @@ def sparse_expectation(operator, state):
     """
     Compute expectation value of operator with a sparse state matrix.
     This is a sparse matrix version of the expectation calculation.
-    
+
     Args:
         operator: scipy.sparse.spmatrix - The operator whose expectation value is desired
         state: scipy.sparse.spmatrix - A sparse matrix representing a state vector (shape: (1, dim))
-        
+
     Returns:
         A complex number giving the expectation value
     """
     if not isinstance(state, sp.spmatrix):
         raise ValueError("State must be a sparse matrix")
-    
+
     # For state vectors, expectation is <ψ|O|ψ> = ψ† O ψ
     # Since state is (1, dim) and operator is (dim, dim), we compute state @ operator @ state.T
     expectation_val = (state @ operator @ state.T)[0, 0]
-    
+
     return expectation_val
 
 
@@ -187,14 +187,14 @@ def select_paulis_sparse(frag_combs, original_decomp, N, psi_sparse):
     Given pairs of Hamiltonian fragments, this code finds the Ghost Pauli
     as well as the corresponding coefficients to be added to each fragment
     This is the sparse matrix version of select_paulis.
-    
+
     :param frag_combs: The indices pairs of the Hamiltonian fragments
     :param original_decomp: The decomposition of the input Hamiltonian
     :param N: The number of qubits for operator creation (should be Nqubits // 2 for tapered operators)
     :param psi_sparse: The quantum state as a sparse matrix
     :return: [(c, pauli, frag_a, frag_b), ...]
     """
-    
+
     if not isinstance(psi_sparse, sp.spmatrix):
         raise ValueError("psi_sparse must be a sparse matrix")
 
@@ -264,13 +264,13 @@ def select_combs_sparse(psi_sparse, N, original_decomp):
     """
     Given a decomposition of the input Hamiltonian, select the set of fragment combinations
     This is the sparse matrix version of select_combs.
-    
+
     :param psi_sparse: The quantum state as a sparse matrix
     :param N: The number of qubits for operator creation (should be Nqubits // 2 for tapered operators)
     :param original_decomp: The decomposition of the input Hamiltonian
     :return: A list of fragment combinations as indices in the decomposition: [(a, b)]
     """
-    
+
     if not isinstance(psi_sparse, sp.spmatrix):
         raise ValueError("psi_sparse must be a sparse matrix")
 
@@ -309,16 +309,16 @@ def update_decomp_w_ghost_paulis_sparse(psi_sparse, N, original_decomp):
     """
     Update the commuting decomposition by introducing ghost paulis into some commuting sets.
     This is the sparse matrix version of update_decomp_w_ghost_paulis.
-    
+
     :param psi_sparse: The quantum state as a sparse matrix
     :param N: The number of qubits for operator creation (should be Nqubits // 2 for tapered operators)
     :param original_decomp: The original Pauli decomposition of the input Hamiltonian
     :return: The updated Pauli decomposition with ghost paulis in each set
     """
-    
+
     if not isinstance(psi_sparse, sp.spmatrix):
         raise ValueError("psi_sparse must be a sparse matrix")
-    
+
     new_decomp = original_decomp.copy()
 
     frag_combs = select_combs_sparse(psi_sparse, N, original_decomp)
@@ -342,16 +342,16 @@ def commutator_variance_sparse(psi_sparse, decomp, N):
     """
     Computes the variance of the [H, G] - K using sparse matrices.
     This is the sparse matrix version of commutator_variance.
-    
+
     :param psi_sparse: The quantum state as a sparse matrix
     :param decomp: The decomposition of the Hamiltonian
     :param N: The number of sites
     :return: The variance metric
     """
-    
+
     if not isinstance(psi_sparse, sp.spmatrix):
         raise ValueError("psi_sparse must be a sparse matrix")
-    
+
     total_var = 0
     for i, frag in enumerate(decomp):
         frag_op = gso(frag, N)
@@ -362,7 +362,7 @@ def commutator_variance_sparse(psi_sparse, decomp, N):
         frag_op = gso(frag, N)
         m_a = np.sqrt(sparse_variance(frag_op, psi_sparse)) / total_var
         vars[i] = sparse_variance(frag_op, psi_sparse) / m_a
-    
+
     return np.sum(vars)
 
 
@@ -370,16 +370,16 @@ def variance_metric_sparse(H, decomp, N):
     """
     Computes the variance metric using sparse matrices.
     This is the sparse matrix version of variance_metric.
-    
+
     :param H: The Hamiltonian
     :param decomp: The decomposition of the Hamiltonian
     :param N: The number of qubits
     :return: The variance metric
     """
-    
+
     H_sparse = gso(H, N)
     psi_sparse = ggs(H_sparse)[1]
-    
+
     # Convert psi to sparse matrix format if it's not already
     if not isinstance(psi_sparse, sp.spmatrix):
         psi_sparse = sp.csr_matrix(psi_sparse.reshape(1, -1))
@@ -388,7 +388,7 @@ def variance_metric_sparse(H, decomp, N):
     for i, frag in enumerate(decomp):
         frag_op = gso(frag, N)
         vars[i] = sparse_variance(frag_op, psi_sparse)
-    
+
     return np.sum((vars)**(1/2))**2
 
 

@@ -8,7 +8,7 @@ from openfermion import (
 )
 import numpy as np
 from entities.paulis import PauliString, pauli_ops_to_qop
-from SymplecticVectorSpace.space_F_definition import SpaceFVector, vector_2_pauli
+from symplectic_vector_space.space_F_definition import SpaceFVector, vector_2_pauli
 from itertools import product
 
 
@@ -115,7 +115,7 @@ def update_decomp_w_ghost_paulis(psi, N, original_decomp):
     """
     new_decomp = original_decomp.copy()
 
-    # Selecting pairs of combination 
+    # Selecting pairs of combination
     frag_combs = select_combs(psi, N, original_decomp)
 
     pauli_added_combs = select_paulis(frag_combs, original_decomp, N, psi)

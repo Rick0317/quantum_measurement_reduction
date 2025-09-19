@@ -5,5 +5,11 @@ This module provides functionality for implementing Bliss techniques
 used in quantum measurement reduction algorithms.
 """
 
-# Add specific imports when you explore this module
-__all__ = []
+# Import main functions from bliss_main
+from .bliss_main import bliss_two_body, bliss_three_body_indices_filtered
+
+__all__ = [
+    'bliss_two_body',
+    'bliss_three_body_indices_filtered'
+]
+
