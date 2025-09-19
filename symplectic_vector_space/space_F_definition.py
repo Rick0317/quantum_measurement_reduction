@@ -1,6 +1,7 @@
 from entities.paulis import PauliString
-pauli_2_binary = {'X': (1, 0), 'Y': (1, 1), 'Z': (0, 1), 'I': (0, 0)}
-binary_2_pauli = {(0, 0): 'I', (0, 1): 'Z', (1, 0): 'X', (1, 1): 'Y'}
+
+pauli_2_binary = {"X": (1, 0), "Y": (1, 1), "Z": (0, 1), "I": (0, 0)}
+binary_2_pauli = {(0, 0): "I", (0, 1): "Z", (1, 0): "X", (1, 1): "Y"}
 
 
 def _pauli_2_vector(pauli_string: PauliString, n: int):
@@ -50,6 +51,7 @@ class SpaceFVector:
     The Symplectic vector in F over the binary field.
 
     """
+
     def __init__(self, pauli_string: PauliString, n):
         self._dim = 2 * n
         self._vector = _pauli_2_vector(pauli_string, n)
@@ -61,8 +63,8 @@ class SpaceFVector:
         self._vector = vector
 
     def apply_J(self):
-        first_vector = self._vector[:self._dim // 2]
-        second_vector = self._vector[self._dim // 2:]
+        first_vector = self._vector[: self._dim // 2]
+        second_vector = self._vector[self._dim // 2 :]
         self.set_vector(second_vector + first_vector)
 
     def __mul__(self, other):
@@ -70,14 +72,14 @@ class SpaceFVector:
         other_vector = other.get_vector()
         result = 0
         for i in range(self._dim):
-            result += (self_vector[i] * other_vector[i])
+            result += self_vector[i] * other_vector[i]
 
         return result % 2
 
 
-if __name__ == '__main__':
-    p1 = PauliString(((0, 'X'), (3, 'Z')))
-    p2 = PauliString(((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'Y')))
+if __name__ == "__main__":
+    p1 = PauliString(((0, "X"), (3, "Z")))
+    p2 = PauliString(((0, "X"), (1, "Z"), (2, "Z"), (3, "Y")))
     dim = 5
     vec_1 = SpaceFVector(p1, dim)
     vec_1_copy = SpaceFVector(p1, dim)

@@ -1,7 +1,11 @@
+from openfermion import FermionOperator as FO
+from openfermion import is_hermitian, normal_ordered
 from scipy.optimize import minimize
-from openfermion import FermionOperator as FO, normal_ordered, is_hermitian
+
 from bliss.generator_based_bliss.generator_based_bliss import *
-from bliss.generator_based_bliss.generator_based_filtering import filter_indices_iterative_non_overlap
+from bliss.generator_based_bliss.generator_based_filtering import (
+    filter_indices_iterative_non_overlap,
+)
 
 
 def copy_ferm_hamiltonian(H: FO):
@@ -43,9 +47,12 @@ def params_to_tensor_specific_op(params, n, candidate_idx):
             for k in range(n):
                 for l in range(n):
                     if (i, j, k, l) <= (l, k, j, i):
-                        ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l])
-                        ferm_op += FermionOperator(f"{l}^ {k} {j}^ {i}",
-                                                   tensor[l, k, j, i])
+                        ferm_op += FermionOperator(
+                            f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l]
+                        )
+                        ferm_op += FermionOperator(
+                            f"{l}^ {k} {j}^ {i}", tensor[l, k, j, i]
+                        )
 
     return ferm_op
 
@@ -64,7 +71,7 @@ def construct_H_bliss_non_overlap(H, params, N, Ne, idx_lists, j, b):
     :return:
     """
 
-    occupation = ([0 for _ in range(N - Ne)] + [1 for _ in range(Ne)])
+    occupation = [0 for _ in range(N - Ne)] + [1 for _ in range(Ne)]
 
     sites_list = [p for p in range(N) if p != j and p != b]
     result = H
@@ -73,12 +80,14 @@ def construct_H_bliss_non_overlap(H, params, N, Ne, idx_lists, j, b):
         site = sites_list[i]
         idx_list = idx_lists[i]
         idx_len = len(idx_list)
-        t = params[prev_idx:prev_idx + idx_len]
+        t = params[prev_idx : prev_idx + idx_len]
         prev_idx += idx_len
 
         t_ferm = params_to_tensor_specific_op(t, N, idx_list)
         print(f"is hermitian {is_hermitian(t_ferm)}")
-        result -= t_ferm * (FermionOperator(((site, 1), (site, 0))) - occupation[sites_list[i]])
+        result -= t_ferm * (
+            FermionOperator(((site, 1), (site, 0))) - occupation[sites_list[i]]
+        )
 
     return result
 
@@ -100,14 +109,20 @@ def bliss_three_body_indices_filtered_non_overlap(H, N, Ne, j, b):
         H_input = copy_ferm_hamiltonian(H)
 
         optimization_wrapper, initial_guess = optimize_non_overlap_BLISS(
-            H_input, N, Ne, idx_lists, j, b)
+            H_input, N, Ne, idx_lists, j, b
+        )
 
-        res = minimize(optimization_wrapper, initial_guess, method='Powell',
-                       options={'disp': True, 'maxiter': 100000})
+        res = minimize(
+            optimization_wrapper,
+            initial_guess,
+            method="Powell",
+            options={"disp": True, "maxiter": 100000},
+        )
 
         H_before_modification = copy_ferm_hamiltonian(H)
         bliss_output = construct_H_bliss_non_overlap(
-            H_before_modification, res.x, N, Ne, idx_lists, j, b)
+            H_before_modification, res.x, N, Ne, idx_lists, j, b
+        )
 
         return normal_ordered(bliss_output)
     else:

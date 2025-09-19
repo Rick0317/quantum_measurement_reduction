@@ -1,1 +1,8 @@
-quantum_measurement_reduction
+bliss
+entities
+ghost_pauli
+shared_pauli
+symplectic_vector_space
+tapering
+utils
+virial

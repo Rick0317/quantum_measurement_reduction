@@ -1,12 +1,19 @@
-from openfermion import FermionOperator, jw_get_ground_state_at_particle_number, get_sparse_operator, get_ground_state
+import numpy as np
+from openfermion import (
+    FermionOperator,
+    get_ground_state,
+    get_sparse_operator,
+    jw_get_ground_state_at_particle_number,
+)
+
 from bliss.normal_bliss.one_norm_func_gen import (
-    generate_analytical_one_norm_2_body,
-    generate_analytical_one_norm_3_body_cheap,
     construct_symmetric_matrix,
     construct_symmetric_tensor,
+    generate_analytical_one_norm_2_body,
     generate_analytical_one_norm_3_body,
-    generate_analytical_one_norm_3_body_simple)
-import numpy as np
+    generate_analytical_one_norm_3_body_cheap,
+    generate_analytical_one_norm_3_body_simple,
+)
 
 
 def params_to_matrix_op(params, n):
@@ -24,9 +31,10 @@ def params_to_matrix_op(params, n):
     sym_matrix = sym_matrix + sym_matrix.T - np.diag(np.diag(sym_matrix))
     for i in range(n):
         for j in range(n):
-            ferm_op += FermionOperator(f'{i}^ {j}', sym_matrix[i, j])
+            ferm_op += FermionOperator(f"{i}^ {j}", sym_matrix[i, j])
 
     return ferm_op
+
 
 def params_to_tensor_op(params, n):
 
@@ -76,6 +84,7 @@ def params_to_tensor_specific_op(params, n, idx_list):
 
     return ferm_op
 
+
 def construct_H_bliss_mu3_o2(H, params, N, Ne):
     total_number_operator = FermionOperator()
     for mode in range(N):
@@ -83,11 +92,11 @@ def construct_H_bliss_mu3_o2(H, params, N, Ne):
 
     result = H
     mu_3 = params[0]
-    t = params[1:1+int(N * (N + 1) // 2) ** 2]
+    t = params[1 : 1 + int(N * (N + 1) // 2) ** 2]
 
     t_ferm = params_to_tensor_op(t, N)
 
-    result -= mu_3 * (total_number_operator ** 3 - Ne ** 3)
+    result -= mu_3 * (total_number_operator**3 - Ne**3)
     result -= t_ferm * (total_number_operator - Ne)
 
     return result
@@ -101,11 +110,11 @@ def construct_H_bliss_mu3_cheapo(H, params, N, Ne, idx_list):
     idx_len = len(idx_list)
     result = H
     mu_3 = params[0]
-    t = params[1:1 + int(idx_len ** 2 * (idx_len ** 2 + 1) // 2)]
+    t = params[1 : 1 + int(idx_len**2 * (idx_len**2 + 1) // 2)]
 
     t_ferm = params_to_tensor_specific_op(t, N, idx_list)
 
-    result -= mu_3 * (total_number_operator ** 3 - Ne ** 3)
+    result -= mu_3 * (total_number_operator**3 - Ne**3)
     result -= t_ferm * (total_number_operator - Ne)
 
     return result
@@ -119,16 +128,16 @@ def construct_H_bliss_mu123_o12(H, params, N, Ne):
     mu_1 = params[0]
     mu_2 = params[1]
     mu_3 = params[2]
-    o_1 = params[3:int(N * (N + 1) // 2) + 3]
-    o_2 = params[3 + int(N * (N + 1) // 2):]
+    o_1 = params[3 : int(N * (N + 1) // 2) + 3]
+    o_2 = params[3 + int(N * (N + 1) // 2) :]
     o1_ferm = params_to_matrix_op(o_1, N)
     o2_ferm = params_to_matrix_op(o_2, N)
 
     result -= mu_1 * (total_number_operator - Ne)
-    result -= mu_2 * (total_number_operator ** 2 - Ne ** 2)
-    result -= mu_3 * (total_number_operator ** 3 - Ne ** 3)
+    result -= mu_2 * (total_number_operator**2 - Ne**2)
+    result -= mu_3 * (total_number_operator**3 - Ne**3)
     result -= o1_ferm * (total_number_operator - Ne)
-    result -= o2_ferm * (total_number_operator ** 2 - Ne ** 2)
+    result -= o2_ferm * (total_number_operator**2 - Ne**2)
 
     return result
 
@@ -140,13 +149,12 @@ def construct_H_bliss_m12_o1(H, params, N, Ne):
     result = H
     mu_1 = params[0]
     mu_2 = params[1]
-    o_1 = params[2:2 + int(N * (N + 1) // 2)]
-
+    o_1 = params[2 : 2 + int(N * (N + 1) // 2)]
 
     o1_ferm = params_to_matrix_op(o_1, N)
 
     result -= mu_1 * (total_number_operator - Ne)
-    result -= mu_2 * (total_number_operator ** 2 - Ne ** 2)
+    result -= mu_2 * (total_number_operator**2 - Ne**2)
     result -= o1_ferm * (total_number_operator - Ne)
 
     return result
@@ -157,7 +165,7 @@ def optimize_bliss_mu3_o2(H, N, Ne):
 
     def optimization_wrapper(params):
         z_val = params[0]
-        t_val = params[1:1 + int(N * (N + 1) // 2) ** 2]
+        t_val = params[1 : 1 + int(N * (N + 1) // 2) ** 2]
 
         return one_norm_func(z_val, t_val)
 
@@ -176,8 +184,8 @@ def optimize_bliss_mu3_cheapo(H, N, Ne):
 
     def optimization_wrapper(params):
         z_val = params[0]
-        o_val = params[1:1 + int(N * (N + 1) // 2)]
-        o2_val = params[1 + int(N * (N + 1) // 2):]
+        o_val = params[1 : 1 + int(N * (N + 1) // 2)]
+        o2_val = params[1 + int(N * (N + 1) // 2) :]
 
         return one_norm_func(z_val, o_val, o2_val)
 
@@ -193,11 +201,14 @@ def optimize_bliss_mu3_cheapo(H, N, Ne):
 
 
 def optimize_bliss_mu3_cheapo(H, N, Ne, idx_list):
-    one_norm_func, one_norm_expr = generate_analytical_one_norm_3_body_specific(H, N, Ne, idx_list)
+    one_norm_func, one_norm_expr = generate_analytical_one_norm_3_body_specific(
+        H, N, Ne, idx_list
+    )
     idx_len = len(idx_list)
+
     def optimization_wrapper(params):
         z_val = params[0]
-        t_val = params[1:1 + int(idx_len ** 2 * (idx_len ** 2 + 1) // 2)]
+        t_val = params[1 : 1 + int(idx_len**2 * (idx_len**2 + 1) // 2)]
 
         return one_norm_func(z_val, t_val)
 
@@ -210,6 +221,7 @@ def optimize_bliss_mu3_cheapo(H, N, Ne, idx_list):
 
     return optimization_wrapper, initial_guess
 
+
 def optimize_bliss_mu123_o12(H, N, Ne):
     one_norm_func, one_norm_expr = generate_analytical_one_norm_3_body(H, N, Ne)
 
@@ -217,8 +229,8 @@ def optimize_bliss_mu123_o12(H, N, Ne):
         x_val = params[0]
         y_val = params[1]
         z_val = params[2]
-        o_vals = params[3:int(N * (N + 1) // 2) + 3]
-        o_val2 = params[int(N * (N + 1) // 2) + 3:]
+        o_vals = params[3 : int(N * (N + 1) // 2) + 3]
+        o_val2 = params[int(N * (N + 1) // 2) + 3 :]
         return one_norm_func(x_val, y_val, z_val, o_vals, o_val2)
 
     x_val = 0
@@ -239,7 +251,7 @@ def optimization_bliss_mu12_o1(H, N, Ne):
     def optimization_wrapper(params):
         x_val = params[0]
         y_val = params[1]
-        o_vals = params[2:2 + int(N * (N + 1) // 2)]
+        o_vals = params[2 : 2 + int(N * (N + 1) // 2)]
         return one_norm_func(x_val, y_val, o_vals)
 
     x_val = 0
@@ -269,7 +281,7 @@ def check_correctness(H_orig: FermionOperator, H_bliss: FermionOperator, Ne):
     print("Original Subspace Min:", gs_orig)
     print("Bliss Subspace Min:", gs_bliss)
 
-    assert np.isclose(gs_orig, gs_bliss, atol=1E-3), "Subspace Min changed"
+    assert np.isclose(gs_orig, gs_bliss, atol=1e-3), "Subspace Min changed"
 
     # 2, Spectral range check
     sparse_orig2 = get_sparse_operator(H_orig)
@@ -281,18 +293,13 @@ def check_correctness(H_orig: FermionOperator, H_bliss: FermionOperator, Ne):
     sparse_orig3 = get_sparse_operator(H_orig)
     sparse_bliss3 = get_sparse_operator(H_bliss)
 
-    max_orig = get_ground_state(- sparse_orig3)[0]
-    max_bliss = get_ground_state(- sparse_bliss3)[0]
+    max_orig = get_ground_state(-sparse_orig3)[0]
+    max_bliss = get_ground_state(-sparse_bliss3)[0]
 
-    spect_range_orig = - max_orig - min_orig
-    spect_range_bliss = - max_bliss - min_bliss
+    spect_range_orig = -max_orig - min_orig
+    spect_range_bliss = -max_bliss - min_bliss
 
     print("Original Spectral Range:", spect_range_orig)
     print("Bliss Spectral Range:", spect_range_bliss)
 
-    assert spect_range_orig + 1E-3 >= spect_range_bliss, "Spectral range reduced"
-
-
-
-
-
+    assert spect_range_orig + 1e-3 >= spect_range_bliss, "Spectral range reduced"

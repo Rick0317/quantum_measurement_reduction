@@ -1,11 +1,11 @@
-from openfermion import (
-FermionOperator
-)
+import random
+from typing import List
+
 import numpy as np
 import sympy as sp
+from openfermion import FermionOperator
+
 from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
-from typing import List
-import random
 
 
 def params_to_tensor_op(params, n):
@@ -43,7 +43,7 @@ def construct_HF_BLISS(H, params, N, Ne):
         total_number_operator += FermionOperator(((mode, 1), (mode, 0)))
 
     result = H
-    t = params[1:1+int(N * (N + 1) // 2) ** 2]
+    t = params[1 : 1 + int(N * (N + 1) // 2) ** 2]
 
     t_ferm = params_to_tensor_op(t, N)
 
@@ -70,12 +70,13 @@ def optimize_HF_BLISS(H, N, Ne, idx_lists):
     :return:
     """
     one_norm_func, one_norm_expr = generate_analytical_one_norm_HF(H, N, Ne, idx_lists)
+
     def optimization_wrapper(params):
         t_vals = []
         prev_index = 0
         for i in range(N):
             ind_length = len(idx_lists[i])
-            t_vals.extend(params[prev_index: prev_index + ind_length])
+            t_vals.extend(params[prev_index : prev_index + ind_length])
             prev_index += ind_length
         return one_norm_func(*t_vals)
 
@@ -91,7 +92,7 @@ def generate_analytical_one_norm_HF(ferm_op, N, ne, idx_lists):
     lamda_variables = []
 
     for i in range(N):
-        T = symmetric_tensor_array_specific(f'T{i}', N, idx_lists[i])
+        T = symmetric_tensor_array_specific(f"T{i}", N, idx_lists[i])
         lamda_variables.append(T)
         T_tensor = symmetric_tensor_from_triangle_specific(T, N, idx_lists[i])
 
@@ -101,12 +102,11 @@ def generate_analytical_one_norm_HF(ferm_op, N, ne, idx_lists):
 
     # Compute the symbolic one-norm
     one_norm_expr = sum(
-        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if
-        term != ())
+        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if term != ()
+    )
 
     flat_vars = [var for sublist in lamda_variables for var in sublist]
-    one_norm_func = sp.lambdify(flat_vars, one_norm_expr,
-                                modules=['numpy'])
+    one_norm_func = sp.lambdify(flat_vars, one_norm_expr, modules=["numpy"])
 
     print("Analytical 1-Norm Complete")
     return one_norm_func, one_norm_expr
@@ -165,10 +165,14 @@ def construct_majorana_terms_HF(ferm_op, N, Ne, T_list: List):
     param_op = ferm_op
 
     for occupied in range(N - Ne):
-        param_op -= t_ferm_op_list[occupied] * (FermionOperator(((occupied, 1), (occupied, 0))))
+        param_op -= t_ferm_op_list[occupied] * (
+            FermionOperator(((occupied, 1), (occupied, 0)))
+        )
 
     for empty in range(N - Ne, N):
-        param_op -= t_ferm_op_list[empty] * (FermionOperator(((empty, 1), (empty, 0))) - 1)
+        param_op -= t_ferm_op_list[empty] * (
+            FermionOperator(((empty, 1), (empty, 0))) - 1
+        )
 
     majo = get_custom_majorana_operator(param_op)
 
@@ -181,7 +185,7 @@ def tensor_to_ferm_op(tensor, N):
         for j in range(N):
             for k in range(N):
                 for l in range(N):
-                    ferm_op += FermionOperator(f'{i}^ {j} {k}^ {l}', tensor[i, j, k, l])
+                    ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l])
 
     return ferm_op
 

@@ -1,9 +1,16 @@
 import numpy as np
-from openfermion import (expectation, QubitOperator,
-                         get_sparse_operator as gso,
-                         get_ground_state as ggs,
-                         FermionOperator, variance)
 import openfermion as of
+from openfermion import (
+    FermionOperator,
+    QubitOperator,
+    expectation,
+)
+from openfermion import get_ground_state as ggs
+from openfermion import get_sparse_operator as gso
+from openfermion import (
+    variance,
+)
+
 
 def cov_frag_pauli(frag: QubitOperator, pauli_w: QubitOperator, psi):
     """
@@ -13,10 +20,14 @@ def cov_frag_pauli(frag: QubitOperator, pauli_w: QubitOperator, psi):
     :param psi:
     :return:
     """
-    return expectation(frag * pauli_w, psi) - expectation(frag, psi) * expectation(pauli_w, psi)
+    return expectation(frag * pauli_w, psi) - expectation(frag, psi) * expectation(
+        pauli_w, psi
+    )
 
 
-def cov_frag_pauli_iterative(frag: QubitOperator, pauli_w: QubitOperator, psi, n_qubits, alpha):
+def cov_frag_pauli_iterative(
+    frag: QubitOperator, pauli_w: QubitOperator, psi, n_qubits, alpha
+):
     """
     Compute the covariance of the fragment and the Pauli word.
     :param frag:
@@ -28,15 +39,16 @@ def cov_frag_pauli_iterative(frag: QubitOperator, pauli_w: QubitOperator, psi, n
     sum_of_cov = 0.0
     for term, coeff in frag.terms.items():
         pauli_v = coeff * QubitOperator(term=term)
-        sum_of_cov += (1. - alpha) * cov_pauli_pauli(gso(pauli_v, n_qubits), gso(pauli_w, n_qubits), psi)
+        sum_of_cov += (1.0 - alpha) * cov_pauli_pauli(
+            gso(pauli_v, n_qubits), gso(pauli_w, n_qubits), psi
+        )
         if term == pauli_w_term:
-            sum_of_cov += alpha * coeff * var_avg(
-                n_qubits)
+            sum_of_cov += alpha * coeff * var_avg(n_qubits)
     return sum_of_cov
 
 
 def var_avg(n_qubits):
-    return 1. - 1. / ( 2 ** n_qubits  + 1 )
+    return 1.0 - 1.0 / (2**n_qubits + 1)
 
 
 def cov_frag_sum_pauli(term_list: list, pauli_w: QubitOperator, psi, n_qubits):
@@ -49,9 +61,10 @@ def cov_frag_sum_pauli(term_list: list, pauli_w: QubitOperator, psi, n_qubits):
     """
     cov_sum = 0
     for term in term_list:
-        cov_sum += cov_pauli_pauli(gso(QubitOperator(term), n_qubits=n_qubits), pauli_w, psi)
+        cov_sum += cov_pauli_pauli(
+            gso(QubitOperator(term), n_qubits=n_qubits), pauli_w, psi
+        )
     return cov_sum
-
 
 
 def cov_pauli_pauli(pauli_w_1, pauli_w_2, psi):
@@ -62,7 +75,9 @@ def cov_pauli_pauli(pauli_w_1, pauli_w_2, psi):
     :param psi:
     :return:
     """
-    return expectation(pauli_w_1 * pauli_w_2, psi) - expectation(pauli_w_1, psi) * expectation(pauli_w_2, psi)
+    return expectation(pauli_w_1 * pauli_w_2, psi) - expectation(
+        pauli_w_1, psi
+    ) * expectation(pauli_w_2, psi)
 
 
 def get_measurement_variance_simple(groupings, wfs, n_qubits, ev_dict=None):
@@ -88,13 +103,12 @@ def get_measurement_variance_simple(groupings, wfs, n_qubits, ev_dict=None):
         var.append(var_val)
 
     sqrt_var = np.sqrt(np.abs(np.real_if_close(np.array(var))))
-    variance = np.sum(sqrt_var)**2
+    variance = np.sum(sqrt_var) ** 2
     return var, variance, ev_dict
 
 
-
 def variance_of_group(fragment: QubitOperator, wfs, n_qubits):
-   return variance(gso(fragment, n_qubits), wfs)
+    return variance(gso(fragment, n_qubits), wfs)
 
 
 def commutator_variance(H: FermionOperator, decomp, N, psi):
@@ -113,24 +127,24 @@ def commutator_variance(H: FermionOperator, decomp, N, psi):
         vars[i] = variance(gso(frag, N), psi)
     return np.sum((vars) ** (1 / 2)) ** 2
 
+
 def get_pauli_word_coefficient(P: QubitOperator, ghosts=None):
-    """Given a single pauli word P, extract its coefficient.
-    """
+    """Given a single pauli word P, extract its coefficient."""
     if ghosts is not None:
-       if P in ghosts:
-          coeffs = [0.0]
-       else:
-          coeffs = list(P.terms.values())
+        if P in ghosts:
+            coeffs = [0.0]
+        else:
+            coeffs = list(P.terms.values())
     else:
-       coeffs = list(P.terms.values())
+        coeffs = list(P.terms.values())
     return coeffs[0]
 
+
 def get_pauli_word_tuple(P: QubitOperator):
-    """Given a single pauli word P, extract the tuple representing the word.
-    """
+    """Given a single pauli word P, extract the tuple representing the word."""
     words = list(P.terms.keys())
     if len(words) != 1:
-        raise(ValueError("P given is not a single pauli word"))
+        raise (ValueError("P given is not a single pauli word"))
     return words[0]
 
 

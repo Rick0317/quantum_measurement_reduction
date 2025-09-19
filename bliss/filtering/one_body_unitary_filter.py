@@ -1,7 +1,9 @@
+import re
+
+import numpy as np
+
 from bliss.arrays_construction.tensor_fermion_operator import *
 from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
-import re
-import numpy as np
 
 
 def filter_one_body_generator(H, N, theta, j, b):
@@ -16,7 +18,7 @@ def filter_one_body_generator(H, N, theta, j, b):
     """
     if np.sin(theta) == 0 or np.cos(theta) == 0:
         return []
-    killer_coeff_candidate = symmetric_tensor_array(f'T{i}', N)
+    killer_coeff_candidate = symmetric_tensor_array(f"T{i}", N)
 
     # Tensor representation of the coefficient candidates
     tensor_repr = symmetric_tensor(killer_coeff_candidate, N)
@@ -29,9 +31,11 @@ def filter_one_body_generator(H, N, theta, j, b):
     tan_theta = np.tan(theta)
     invtan_theta = 1 / tan_theta
 
-    killer = tensor_ferm_op * (tan_theta * FermionOperator(f"{j}^ {b}")
-                               + invtan_theta * FermionOperator(f"{b}^ {j}")
-                               - 1)
+    killer = tensor_ferm_op * (
+        tan_theta * FermionOperator(f"{j}^ {b}")
+        + invtan_theta * FermionOperator(f"{b}^ {j}")
+        - 1
+    )
 
     killer_in_majo = get_custom_majorana_operator(killer)
     killer_keys = killer_in_majo.terms.keys()
@@ -52,9 +56,10 @@ def filter_one_body_generator(H, N, theta, j, b):
         all_terms_counter += 1
         if term in killer_keys:
             expre = killer_in_majo.terms[term]
-            matches = re.findall(f'T{i}_(\\d{{4}})', str(expre))
-            result = {tuple(map(int, match)) for match in
-                      matches}  # Use set comprehension
+            matches = re.findall(f"T{i}_(\\d{{4}})", str(expre))
+            result = {
+                tuple(map(int, match)) for match in matches
+            }  # Use set comprehension
 
             if coeff != 0:
                 candidates_counter += 1

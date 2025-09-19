@@ -1,18 +1,23 @@
 """
 Implementation of the shared Pauli technique
 """
+
+from copy import deepcopy
+
 import numpy as np
 from openfermion import (
-    get_sparse_operator as gso,
-    get_ground_state as ggs,
-    variance,
-    expectation,
+    QubitOperator,
     bravyi_kitaev,
-    QubitOperator
+    expectation,
 )
-from copy import deepcopy
-from utils.frag_utils import does_term_frag_commute
+from openfermion import get_ground_state as ggs
+from openfermion import get_sparse_operator as gso
+from openfermion import (
+    variance,
+)
+
 from entities.paulis import PauliString
+from utils.frag_utils import does_term_frag_commute
 
 
 def update_decomp_w_shared_paulis(psi, N, original_decomp):
@@ -34,6 +39,7 @@ def update_decomp_w_shared_paulis(psi, N, original_decomp):
         new_decomp[index_b] += share * qubit_op
 
     return new_decomp
+
 
 def select_sharable_paulis(frag_combs, original_decomp, N, psi):
     """
@@ -76,7 +82,9 @@ def select_sharable_paulis(frag_combs, original_decomp, N, psi):
 
         for sharable_pauli in sharable_pauli_a2b:
 
-            pauli_added_combs.append((sharable_pauli[0], sharable_pauli[1], index_a, index_b))
+            pauli_added_combs.append(
+                (sharable_pauli[0], sharable_pauli[1], index_a, index_b)
+            )
 
     return pauli_added_combs
 
@@ -97,7 +105,7 @@ def select_combs(psi, N, original_decomp):
 
     score_board = {}
     for a in range(n_frag):
-        for b in range(a+1, n_frag):
+        for b in range(a + 1, n_frag):
             var_a = vars[a]
             var_b = vars[b]
 
@@ -106,11 +114,9 @@ def select_combs(psi, N, original_decomp):
             score = p * (np.sqrt(var_a * var_b)) / (np.sqrt(var_a) + np.sqrt(var_b))
             score_board[(a, b)] = score
 
-    sorted_items = sorted(score_board.items(), key=lambda item: item[1],
-                          reverse=True)
+    sorted_items = sorted(score_board.items(), key=lambda item: item[1], reverse=True)
 
-    top_50_count = len(score_board) // 2 + (
-        1 if len(score_board) % 2 != 0 else 0)
+    top_50_count = len(score_board) // 2 + (1 if len(score_board) % 2 != 0 else 0)
 
     top_keys = [key for key, value in sorted_items[:top_50_count]]
     print(top_keys)
@@ -123,8 +129,8 @@ def variance_metric(H, decomp, N):
 
     vars = np.zeros(len(decomp), dtype=np.complex128)
     for i, frag in enumerate(decomp):
-        vars[i] = variance( gso(frag, N), psi )
-    return np.sum((vars)**(1/2))**2
+        vars[i] = variance(gso(frag, N), psi)
+    return np.sum((vars) ** (1 / 2)) ** 2
 
 
 def abs_of_dict_value(x):
@@ -142,8 +148,8 @@ def copy_hamiltonian(H):
 
 
 def load_hamiltonian(moltag):
-    filename = f'../../SolvableQubitHamiltonians/ham_lib/lih_fer.bin'
-    with open(filename, 'rb') as f:
+    filename = f"../../SolvableQubitHamiltonians/ham_lib/lih_fer.bin"
+    with open(filename, "rb") as f:
         Hfer = pickle.load(f)
     Hqub = bravyi_kitaev(Hfer)
     Hqub -= Hqub.constant
@@ -173,7 +179,9 @@ def get_sharable_paulis(original_decomp):
                 if frag_idx_compared != frag_idx:
                     commute = True
                     for idx, compared_term in enumerate(fragment_compared.terms):
-                        if not PauliString(compared_term).qubit_wise_commute(PauliString(term)):
+                        if not PauliString(compared_term).qubit_wise_commute(
+                            PauliString(term)
+                        ):
                             commute = False
                     if commute:
                         all_pauli_dict[term].append(frag_idx_compared)
@@ -232,27 +240,39 @@ def get_overlapping_decomp(sharable_pauli_dict, original_decomp, pw_grp_idxes_fi
     return all_sharable_contained_decomp, all_sharable_no_fixed_decomp
 
 
-def get_sharable_only_decomp(sharable_pauli_dict, original_decomp, pw_grp_idxes_fix, coeff_map):
+def get_sharable_only_decomp(
+    sharable_pauli_dict, original_decomp, pw_grp_idxes_fix, coeff_map
+):
     """
     Give the overlapping allowed decomposition
     :param sharable_pauli_dict:
     :return:
     """
     sharable_only_decomp = [QubitOperator().zero() for _ in range(len(original_decomp))]
-    sharable_only_no_fixed_decomp = [QubitOperator().zero() for _ in range(len(original_decomp))]
+    sharable_only_no_fixed_decomp = [
+        QubitOperator().zero() for _ in range(len(original_decomp))
+    ]
 
     for pauli_idx, pauli in enumerate(sharable_pauli_dict):
         pauli_appearance_indices_lst = sharable_pauli_dict[pauli]
         for appear_idx in pauli_appearance_indices_lst:
             if appear_idx != pw_grp_idxes_fix[pauli]:
-                sharable_only_no_fixed_decomp[appear_idx] += QubitOperator(term=pauli) * coeff_map[pauli]
-            sharable_only_decomp[appear_idx] += QubitOperator(term=pauli) * coeff_map[pauli]
+                sharable_only_no_fixed_decomp[appear_idx] += (
+                    QubitOperator(term=pauli) * coeff_map[pauli]
+                )
+            sharable_only_decomp[appear_idx] += (
+                QubitOperator(term=pauli) * coeff_map[pauli]
+            )
 
     return sharable_only_decomp, sharable_only_no_fixed_decomp
 
 
-def get_all_pw_indices(sharable_pauli_list, sharable_no_fixed_decomp, pw_grp_idxes_no_fix, new_grp_idx_start):
-
+def get_all_pw_indices(
+    sharable_pauli_list,
+    sharable_no_fixed_decomp,
+    pw_grp_idxes_no_fix,
+    new_grp_idx_start,
+):
     """
     Creates a dictionary mapping all Pauli words to their indices in the coefficient vector corresponding to the coefficients of that Pauli words in the respective group.
     Args:
@@ -269,7 +289,9 @@ def get_all_pw_indices(sharable_pauli_list, sharable_no_fixed_decomp, pw_grp_idx
         current_idxs = {}
         for grp_idx in pw_grp_idxes_no_fix[pw]:
             # The total number of appearances for previous pauli words + The appearance index of the Pauli word in the group of grp_idx
-            idx = new_grp_idx_start[grp_idx] + qubit_op_to_list(sharable_no_fixed_decomp[grp_idx]).index(pw)
+            idx = new_grp_idx_start[grp_idx] + qubit_op_to_list(
+                sharable_no_fixed_decomp[grp_idx]
+            ).index(pw)
             current_idxs[grp_idx] = idx
 
         pw_indices[pw] = current_idxs
@@ -289,7 +311,9 @@ def get_pw_grp_idxes_no_fix_len(pw_grp_idxes_no_fix: dict):
     return pw_grp_idxes_no_fix_len
 
 
-def get_coefficient_orderings(sharable_only_decomp, sharable_pauli_list, sharable_pauli_indices_list, coeff_map):
+def get_coefficient_orderings(
+    sharable_only_decomp, sharable_pauli_list, sharable_pauli_indices_list, coeff_map
+):
     """
     Compute the fixed group for each Pauli word and get overlapped grouping with the fixed Pauli removed. Coefficients in coefficient splitting are based on new_overlapped_group (e.g. 0th component of coefficient vector corresponds to coefficient of 0th Pauli Word in 0th group).
     Args:
@@ -308,19 +332,36 @@ def get_coefficient_orderings(sharable_only_decomp, sharable_pauli_list, sharabl
     sharable_contained_no_fixed_decomp = deepcopy(sharable_only_decomp)
     new_sharable_pauli_indices_list = deepcopy(sharable_pauli_indices_list)
     for pw_idx, pw in enumerate(sharable_pauli_list):
-        #fixed_grp.append(pw_grp_idxs[pw_idx][-1])
+        # fixed_grp.append(pw_grp_idxs[pw_idx][-1])
         if len(sharable_pauli_indices_list[pw_idx]) > 0:
-           # Removing the fixed indices of each Pauli Word (Last index of appearance)
-           fixed_grp.append(sharable_pauli_indices_list[pw_idx][len(sharable_pauli_indices_list[pw_idx]) -1])
-           sharable_contained_no_fixed_decomp[fixed_grp[pw_idx]] -= QubitOperator(pw) * coeff_map[pw]
-           new_sharable_pauli_indices_list[pw_idx].remove(fixed_grp[pw_idx])
+            # Removing the fixed indices of each Pauli Word (Last index of appearance)
+            fixed_grp.append(
+                sharable_pauli_indices_list[pw_idx][
+                    len(sharable_pauli_indices_list[pw_idx]) - 1
+                ]
+            )
+            sharable_contained_no_fixed_decomp[fixed_grp[pw_idx]] -= (
+                QubitOperator(pw) * coeff_map[pw]
+            )
+            new_sharable_pauli_indices_list[pw_idx].remove(fixed_grp[pw_idx])
         else:
-           fixed_grp.append(None)
+            fixed_grp.append(None)
 
-    new_grp_len_list = np.array([len(fragment.terms) for fragment in sharable_contained_no_fixed_decomp])
-    new_grp_idx_start = [sum(new_grp_len_list[0:i:1]) for i in range(len(sharable_contained_no_fixed_decomp))]
+    new_grp_len_list = np.array(
+        [len(fragment.terms) for fragment in sharable_contained_no_fixed_decomp]
+    )
+    new_grp_idx_start = [
+        sum(new_grp_len_list[0:i:1])
+        for i in range(len(sharable_contained_no_fixed_decomp))
+    ]
 
-    return fixed_grp, sharable_contained_no_fixed_decomp, new_sharable_pauli_indices_list, new_grp_len_list, new_grp_idx_start
+    return (
+        fixed_grp,
+        sharable_contained_no_fixed_decomp,
+        new_sharable_pauli_indices_list,
+        new_grp_len_list,
+        new_grp_idx_start,
+    )
 
 
 def qubit_op_to_list(qubit_op: QubitOperator):
@@ -328,7 +369,6 @@ def qubit_op_to_list(qubit_op: QubitOperator):
     for idx, term in enumerate(qubit_op.terms):
         term_list.append(term)
     return term_list
-
 
 
 def get_pauli_coeff_map(decomp):
@@ -341,7 +381,11 @@ def get_pauli_coeff_map(decomp):
     return pauli_coeff_map
 
 
-
-def distribute_coeff(optimized_coeff, original_coeff, all_sharable_contained_decomp, fragment_idx_to_sharable_paulis):
+def distribute_coeff(
+    optimized_coeff,
+    original_coeff,
+    all_sharable_contained_decomp,
+    fragment_idx_to_sharable_paulis,
+):
     for sharable_contained_decomp in all_sharable_contained_decomp:
         pass

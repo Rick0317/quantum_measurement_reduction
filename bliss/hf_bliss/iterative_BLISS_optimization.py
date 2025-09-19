@@ -1,8 +1,11 @@
-from scipy.optimize import minimize
+from copy import deepcopy
+
 from openfermion import FermionOperator as FO
+from scipy.optimize import minimize
+
 from bliss.hf_bliss.iterative_bliss import *
 from bliss.hf_bliss.iterative_filter import filter_indices_iterative_HF
-from copy import deepcopy
+
 
 def copy_ferm_hamiltonian(H: FO):
     H_copy = FO().zero()
@@ -49,7 +52,7 @@ def construct_H_bliss_HF(H: FermionOperator, params, N, Ne, idx_lists):
     for i in range(len(idx_lists)):
         idx_list = idx_lists[i]
         idx_len = len(idx_list)
-        t = params[prev_idx:prev_idx + idx_len]
+        t = params[prev_idx : prev_idx + idx_len]
         prev_idx += idx_len
 
         t_ferm = params_to_tensor_specific_op(t, N, idx_list)
@@ -76,14 +79,20 @@ def bliss_three_body_indices_filtered_HF(H, N, Ne):
         H_input = copy_ferm_hamiltonian(H)
 
         optimization_wrapper, initial_guess = optimize_HF_BLISS(
-            H_input, N, Ne, idx_lists)
+            H_input, N, Ne, idx_lists
+        )
 
-        res = minimize(optimization_wrapper, initial_guess, method='Powell',
-                       options={'disp': True, 'maxiter': 100000})
+        res = minimize(
+            optimization_wrapper,
+            initial_guess,
+            method="Powell",
+            options={"disp": True, "maxiter": 100000},
+        )
 
         H_before_modification = copy_ferm_hamiltonian(H)
         bliss_output, killer = construct_H_bliss_HF(
-            H_before_modification, res.x, N, Ne, idx_lists)
+            H_before_modification, res.x, N, Ne, idx_lists
+        )
 
         return bliss_output
     else:

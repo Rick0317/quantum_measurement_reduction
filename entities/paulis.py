@@ -1,5 +1,6 @@
 from openfermion import QubitOperator
 
+
 class PauliOp:
     def __init__(self, op):
         self.index, self.pauli = op
@@ -8,7 +9,7 @@ class PauliOp:
         if self.index != other.index:
             return True  # Different qubits always commute.
         # Commutation logic: same Pauli or identity always commutes.
-        if self.pauli == other.pauli or self.pauli == 'I' or other.pauli == 'I':
+        if self.pauli == other.pauli or self.pauli == "I" or other.pauli == "I":
             return True
         # Anti-commuting pairs: X/Y, Y/Z, Z/X.
         return False  # X vs Y, Y vs Z, Z vs X anti-commute.
@@ -20,7 +21,9 @@ class PauliString:
 
     def qubit_wise_commute(self, other):
         for index in set(self.pauli_ops.keys()).intersection(other.pauli_ops.keys()):
-            if not PauliOp((index, self.pauli_ops[index])).commutes(PauliOp((index, other.pauli_ops[index]))):
+            if not PauliOp((index, self.pauli_ops[index])).commutes(
+                PauliOp((index, other.pauli_ops[index]))
+            ):
                 return False
         return True
 
@@ -33,8 +36,7 @@ class PauliString:
         return len(commutator.terms) == 0
 
     def to_qubit_operator(self, coeff=1.0):
-        qubit_terms = tuple(
-            (index, pauli) for index, pauli in self.pauli_ops.items())
+        qubit_terms = tuple((index, pauli) for index, pauli in self.pauli_ops.items())
         return QubitOperator(qubit_terms, coeff)
 
     def get_pauli_ops(self):
@@ -63,19 +65,16 @@ class PauliString:
         return True
 
 
-
 def pauli_ops_to_qop(pauli_ops: dict):
-    pauli_string = ''
+    pauli_string = ""
     for key in pauli_ops:
         pauli = pauli_ops[key]
-        if pauli != 'I':
-            pauli_string += pauli + str(key) + ' '
+        if pauli != "I":
+            pauli_string += pauli + str(key) + " "
 
     return QubitOperator(pauli_string)
 
 
-if __name__ == '__main__':
-    p1 = PauliString(((0, 'X'), (4, 'Z')))
-    p2 = PauliString(((0, 'X'), (1, 'Z'), (2, 'Z'), (3, 'Y')))
-
-
+if __name__ == "__main__":
+    p1 = PauliString(((0, "X"), (4, "Z")))
+    p2 = PauliString(((0, "X"), (1, "Z"), (2, "Z"), (3, "Y")))

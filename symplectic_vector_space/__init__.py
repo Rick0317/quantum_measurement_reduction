@@ -7,17 +7,17 @@ quantum measurement reduction techniques.
 """
 
 from .space_F_definition import (
-    pauli_2_binary,
-    binary_2_pauli,
+    SpaceFVector,
     _pauli_2_vector,
+    binary_2_pauli,
+    pauli_2_binary,
     vector_2_pauli,
-    SpaceFVector
 )
 
 __all__ = [
-    'pauli_2_binary',
-    'binary_2_pauli',
-    '_pauli_2_vector',
-    'vector_2_pauli',
-    'SpaceFVector'
+    "pauli_2_binary",
+    "binary_2_pauli",
+    "_pauli_2_vector",
+    "vector_2_pauli",
+    "SpaceFVector",
 ]

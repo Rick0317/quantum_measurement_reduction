@@ -1,10 +1,19 @@
-from openfermion import PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator, QuadOperator, BosonOperator
-from typing import Union
-from bliss.majorana.custom_Majorana_operator import CustomMajoranaOperator
-import numpy
 import itertools
-from openfermion.utils.operator_utils import count_qubits
+from typing import Union
+
+import numpy
 import sympy as sp
+from openfermion import (
+    BosonOperator,
+    DiagonalCoulombHamiltonian,
+    FermionOperator,
+    PolynomialTensor,
+    QuadOperator,
+)
+from openfermion.utils.operator_utils import count_qubits
+
+from bliss.majorana.custom_Majorana_operator import CustomMajoranaOperator
+
 
 def get_quad_operator(operator, hbar=1.0):
     """Convert to QuadOperator.
@@ -22,15 +31,17 @@ def get_quad_operator(operator, hbar=1.0):
 
     if isinstance(operator, BosonOperator):
         for term, coefficient in operator.terms.items():
-            tmp = QuadOperator('', coefficient)
+            tmp = QuadOperator("", coefficient)
             for i, d in term:
                 tmp *= (1.0 / numpy.sqrt(2.0 * hbar)) * (
-                    QuadOperator(((i, 'q'))) + QuadOperator(((i, 'p')), 1j * (-1) ** d)
+                    QuadOperator(((i, "q"))) + QuadOperator(((i, "p")), 1j * (-1) ** d)
                 )
             quad_operator += tmp
 
     else:
-        raise TypeError("Only BosonOperator is currently " "supported for get_quad_operator.")
+        raise TypeError(
+            "Only BosonOperator is currently " "supported for get_quad_operator."
+        )
 
     return quad_operator
 
@@ -51,12 +62,12 @@ def get_boson_operator(operator, hbar=1.0):
 
     if isinstance(operator, QuadOperator):
         for term, coefficient in operator.terms.items():
-            tmp = BosonOperator('', coefficient)
+            tmp = BosonOperator("", coefficient)
             for i, d in term:
-                if d == 'q':
+                if d == "q":
                     coeff = numpy.sqrt(hbar / 2)
                     sign = 1
-                elif d == 'p':
+                elif d == "p":
                     coeff = -1j * numpy.sqrt(hbar / 2)
                     sign = -1
 
@@ -64,7 +75,9 @@ def get_boson_operator(operator, hbar=1.0):
             boson_operator += tmp
 
     else:
-        raise TypeError("Only QuadOperator is currently " "supported for get_boson_operator.")
+        raise TypeError(
+            "Only QuadOperator is currently " "supported for get_boson_operator."
+        )
 
     return boson_operator
 
@@ -82,7 +95,9 @@ def get_fermion_operator(operator):
     elif isinstance(operator, CustomMajoranaOperator):
         return _majorana_operator_to_fermion_operator(operator)
     else:
-        raise TypeError('{} cannot be converted to FermionOperator'.format(type(operator)))
+        raise TypeError(
+            "{} cannot be converted to FermionOperator".format(type(operator))
+        )
 
 
 def _polynomial_tensor_to_fermion_operator(operator):
@@ -128,7 +143,7 @@ def _majorana_term_to_fermion_operator(term):
 
 
 def get_custom_majorana_operator(
-    operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator]
+    operator: Union[PolynomialTensor, DiagonalCoulombHamiltonian, FermionOperator],
 ) -> CustomMajoranaOperator:
     """
     Convert to MajoranaOperator.
@@ -154,11 +169,12 @@ def get_custom_majorana_operator(
         return _fermion_operator_to_majorana_operator(operator)
     elif isinstance(operator, (PolynomialTensor, DiagonalCoulombHamiltonian)):
         return _fermion_operator_to_majorana_operator(get_fermion_operator(operator))
-    raise TypeError('{} cannot be converted to MajoranaOperator'.format(type(operator)))
+    raise TypeError("{} cannot be converted to MajoranaOperator".format(type(operator)))
 
 
 def _fermion_operator_to_majorana_operator(
-        fermion_operator: FermionOperator) -> CustomMajoranaOperator:
+    fermion_operator: FermionOperator,
+) -> CustomMajoranaOperator:
     """
     Convert FermionOperator to CustomMajoranaOperator.
 
@@ -169,7 +185,7 @@ def _fermion_operator_to_majorana_operator(
         CustomMajoranaOperator.
     """
     if not isinstance(fermion_operator, FermionOperator):
-        raise TypeError('Input must be a FermionOperator.')
+        raise TypeError("Input must be a FermionOperator.")
 
     majorana_operator = CustomMajoranaOperator()
     for term, coeff in fermion_operator.terms.items():
@@ -203,7 +219,7 @@ def _fermion_term_to_majorana_operator(term: tuple) -> CustomMajoranaOperator:
         TypeError: if term is a tuple.
     """
     if not isinstance(term, tuple):
-        raise TypeError('Term does not have the correct Type.')
+        raise TypeError("Term does not have the correct Type.")
 
     converted_term = CustomMajoranaOperator(())
     for index, action in term:

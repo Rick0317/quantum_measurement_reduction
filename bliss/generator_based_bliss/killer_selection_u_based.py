@@ -2,7 +2,9 @@
 In this file, we will select the killer based on the previously selected
 parameterization unitary operators.
 """
+
 from typing import List
+
 from openfermion import FermionOperator
 
 
@@ -17,6 +19,7 @@ class HFKiller(Killer):
     I want to return
 
     """
+
     def __init__(self, N, Ne):
         super().__init__(N, Ne)
 
@@ -24,11 +27,13 @@ class HFKiller(Killer):
         param_op = FermionOperator()
         for occupied in range(self.N - self.Ne):
             param_op += t_ferm_op_list[occupied] * (
-                FermionOperator(((occupied, 1), (occupied, 0))))
+                FermionOperator(((occupied, 1), (occupied, 0)))
+            )
 
         for empty in range(self.N - self.Ne, self.N):
             param_op += t_ferm_op_list[empty] * (
-                        FermionOperator(((empty, 1), (empty, 0))) - 1)
+                FermionOperator(((empty, 1), (empty, 0))) - 1
+            )
 
         return param_op
 
@@ -49,7 +54,3 @@ def get_killers(N, Ne, u_list: List[tuple]):
         for anti_herm in u_list:
             for value in anti_herm:
                 used_indices.add(value)
-
-
-
-

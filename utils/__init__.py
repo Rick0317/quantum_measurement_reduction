@@ -7,8 +7,8 @@ the quantum measurement reduction package.
 
 from .basic_utils import (
     construct_one_body_fermion_operator,
+    construct_three_body_fermion_operator,
     construct_two_body_fermion_operator,
-    construct_three_body_fermion_operator
 )
 
 # Additional utility modules will be imported here as needed
@@ -21,9 +21,8 @@ from .basic_utils import (
 
 __all__ = [
     # Basic utilities
-    'construct_one_body_fermion_operator',
-    'construct_two_body_fermion_operator',
-    'construct_three_body_fermion_operator',
-    
+    "construct_one_body_fermion_operator",
+    "construct_two_body_fermion_operator",
+    "construct_three_body_fermion_operator",
     # Other utilities will be added as we explore the files
 ]

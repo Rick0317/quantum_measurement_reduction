@@ -1,5 +1,6 @@
-from openfermion import FermionOperator, normal_ordered
 import numpy as np
+from openfermion import FermionOperator, normal_ordered
+
 
 def physicist_to_chemist(fermion_op: FermionOperator):
     """
@@ -97,6 +98,8 @@ def chemist_ferm_to_tensor(fermion_op: FermionOperator, n_mode):
             spatial_s = s // 2
             spatial_t = t // 2
             spatial_u = u // 2
-            three_body_tensor[spatial_p, spatial_q, spatial_r, spatial_s, spatial_t, spatial_u] = coeff
+            three_body_tensor[
+                spatial_p, spatial_q, spatial_r, spatial_s, spatial_t, spatial_u
+            ] = coeff
 
     return one_body_tensor, two_body_tensor, three_body_tensor

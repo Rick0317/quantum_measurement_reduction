@@ -1,7 +1,15 @@
-from openfermion import FermionOperator as FO, get_sparse_operator as gso, bravyi_kitaev, normal_ordered
-from scipy.linalg import expm
 import random
+
 import numpy as np
+from openfermion import FermionOperator as FO
+from openfermion import (
+    bravyi_kitaev,
+)
+from openfermion import get_sparse_operator as gso
+from openfermion import (
+    normal_ordered,
+)
+from scipy.linalg import expm
 
 
 def one_body_unitary(i, a, N):

@@ -1,7 +1,7 @@
+import numpy
+import sympy as sp
 from openfermion import MajoranaOperator
 from sympy import Add, Basic, simplify
-import sympy as sp
-import numpy
 
 
 class CustomMajoranaOperator(MajoranaOperator):
@@ -52,16 +52,16 @@ class CustomMajoranaOperator(MajoranaOperator):
             return NotImplemented
 
         if isinstance(other, (int, float, complex, Basic, Add)):
-            terms = {term: coefficient * other for term, coefficient in
-                     self.terms.items()}
+            terms = {
+                term: coefficient * other for term, coefficient in self.terms.items()
+            }
             return CustomMajoranaOperator.from_dict(terms)
 
         terms = {}
         for left_term, left_coefficient in self.terms.items():
             for right_term, right_coefficient in other.terms.items():
                 new_term, parity = _merge_majorana_terms(left_term, right_term)
-                coefficient = left_coefficient * right_coefficient * (
-                    -1) ** parity
+                coefficient = left_coefficient * right_coefficient * (-1) ** parity
                 if new_term in terms:
                     terms[new_term] += coefficient
                 else:
@@ -87,7 +87,7 @@ class CustomMajoranaOperator(MajoranaOperator):
 
     def __str__(self):
         if not self.terms:
-            return '0'
+            return "0"
         lines = []
         for term, coeff in sorted(self.terms.items()):
             # if isinstance(coeff, Add):
@@ -96,10 +96,10 @@ class CustomMajoranaOperator(MajoranaOperator):
             # else:
             #     if numpy.isclose(float(coeff), 0.0):
             #         continue
-            lines.append('{} {} +'.format(coeff, term))
+            lines.append("{} {} +".format(coeff, term))
         if not lines:
-            return '0'
-        return '\n'.join(lines)[:-2]
+            return "0"
+        return "\n".join(lines)[:-2]
 
     @staticmethod
     def from_dict(terms):
@@ -111,7 +111,9 @@ class CustomMajoranaOperator(MajoranaOperator):
 
     def __truediv__(self, other):
         if isinstance(other, (int, float, complex, Add, sp.Basic)):
-            terms = {term: coeff / sp.sympify(other) for term, coeff in self.terms.items()}
+            terms = {
+                term: coeff / sp.sympify(other) for term, coeff in self.terms.items()
+            }
             return CustomMajoranaOperator.from_dict(terms)
         return NotImplemented
 
@@ -119,7 +121,10 @@ class CustomMajoranaOperator(MajoranaOperator):
         """
         Returns numeric coefficients, excluding symbolic terms.
         """
-        return {term: coeff for term, coeff in self.terms.items() if sp.asks_finite(coeff)}
+        return {
+            term: coeff for term, coeff in self.terms.items() if sp.asks_finite(coeff)
+        }
+
 
 def _merge_majorana_terms(left_term, right_term):
     """Merge two Majorana terms.

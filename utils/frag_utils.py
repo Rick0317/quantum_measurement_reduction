@@ -1,9 +1,10 @@
-from openfermion import QubitOperator
 from typing import List
+
+from openfermion import QubitOperator
 
 
 def does_term_frag_commute(term, frag: QubitOperator):
-    return (term * frag - frag * term)
+    return term * frag - frag * term
 
 
 def get_pauli_words_lst(decomposition: List[QubitOperator]):

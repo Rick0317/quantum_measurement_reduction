@@ -1,11 +1,11 @@
-from openfermion import (
-FermionOperator
-)
+import random
+from typing import List
+
 import numpy as np
 import sympy as sp
+from openfermion import FermionOperator
+
 from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
-from typing import List
-import random
 
 
 def params_to_tensor_op(params, n):
@@ -34,11 +34,13 @@ def params_to_tensor_op(params, n):
             for k in range(n):
                 for l in range(n):
                     if (i, j, k, l) <= (l, k, j, i):
-                        ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}",
-                                                   tensor[i, j, k, l])
+                        ferm_op += FermionOperator(
+                            f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l]
+                        )
 
-                        ferm_op += FermionOperator(f"{l}^ {k} {j}^ {i}",
-                                                   tensor[l, k, j, i])
+                        ferm_op += FermionOperator(
+                            f"{l}^ {k} {j}^ {i}", tensor[l, k, j, i]
+                        )
 
     return ferm_op
 
@@ -49,7 +51,7 @@ def construct_HF_BLISS(H, params, N, Ne, j, b):
         total_number_operator += FermionOperator(((mode, 1), (mode, 0)))
 
     result = H
-    t = params[1:1+int(N * (N + 1) // 2) ** 2]
+    t = params[1 : 1 + int(N * (N + 1) // 2) ** 2]
 
     t_ferm = params_to_tensor_op(t, N)
 
@@ -78,13 +80,16 @@ def optimize_non_overlap_BLISS(H, N, Ne, idx_lists, j, b):
     the killer for each index.
     :return:
     """
-    one_norm_func, one_norm_expr = generate_analytical_one_norm_U_based(H, N, Ne, idx_lists, j, b)
+    one_norm_func, one_norm_expr = generate_analytical_one_norm_U_based(
+        H, N, Ne, idx_lists, j, b
+    )
+
     def optimization_wrapper(params):
         t_vals = []
         prev_index = 0
         for i in range(N - 2):
             ind_length = len(idx_lists[i])
-            t_vals.extend(params[prev_index: prev_index + ind_length])
+            t_vals.extend(params[prev_index : prev_index + ind_length])
             prev_index += ind_length
         return one_norm_func(*t_vals)
 
@@ -110,22 +115,23 @@ def generate_analytical_one_norm_U_based(ferm_op, N, Ne, idx_lists, j, b):
 
     for i in range(len(sites_list)):
         index = sites_list[i]
-        T = symmetric_tensor_array_specific(f'T{index}', N, idx_lists[i])
+        T = symmetric_tensor_array_specific(f"T{index}", N, idx_lists[i])
         lamda_variables.append(T)
         T_tensor = symmetric_tensor_from_triangle_specific(T, N, idx_lists[i])
 
         T_tensor_list.append(T_tensor)
 
-    majorana_terms = construct_majorana_terms_non_overlap(ferm_op, N, Ne, T_tensor_list, j, b)
+    majorana_terms = construct_majorana_terms_non_overlap(
+        ferm_op, N, Ne, T_tensor_list, j, b
+    )
 
     # Compute the symbolic one-norm
     one_norm_expr = sum(
-        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if
-        term != ())
+        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if term != ()
+    )
 
     flat_vars = [var for sublist in lamda_variables for var in sublist]
-    one_norm_func = sp.lambdify(flat_vars, one_norm_expr,
-                                modules=['numpy'])
+    one_norm_func = sp.lambdify(flat_vars, one_norm_expr, modules=["numpy"])
 
     print("Analytical 1-Norm Complete")
     return one_norm_func, one_norm_expr
@@ -197,16 +203,16 @@ def construct_majorana_terms_non_overlap(ferm_op, N, Ne, T_list: List, j, b):
 
     param_op = ferm_op
 
-
     virtual_orbitals = [p for p in range(N - Ne) if p != j]
     occupied_orbitals = [p for p in range(N - Ne, Ne) if p != b]
-
 
     for empty in virtual_orbitals:
         param_op -= t_ferm_op_list[empty] * (FermionOperator(((empty, 1), (empty, 0))))
 
     for occupied in occupied_orbitals:
-        param_op -= t_ferm_op_list[occupied] * (FermionOperator(((occupied, 1), (occupied, 0))) - 1)
+        param_op -= t_ferm_op_list[occupied] * (
+            FermionOperator(((occupied, 1), (occupied, 0))) - 1
+        )
 
     majo = get_custom_majorana_operator(param_op)
 
@@ -220,10 +226,12 @@ def tensor_to_ferm_op(tensor, N):
             for k in range(N):
                 for l in range(N):
                     if (i, j, k, l) <= (l, k, j, i):
-                        ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}",
-                                                   tensor[i, j, k, l])
-                        ferm_op += FermionOperator(f"{l}^ {k} {j}^ {i}",
-                                                   tensor[l, k, j, i])
+                        ferm_op += FermionOperator(
+                            f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l]
+                        )
+                        ferm_op += FermionOperator(
+                            f"{l}^ {k} {j}^ {i}", tensor[l, k, j, i]
+                        )
 
     return ferm_op
 

@@ -1,8 +1,10 @@
-import numpy as np
 import random
-from openfermion import FermionOperator
-from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
+
+import numpy as np
 import sympy as sp
+from openfermion import FermionOperator
+
+from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
 
 
 def get_param_num(n):
@@ -91,7 +93,7 @@ def tensor_to_ferm_op(tensor, N):
         for j in range(N):
             for k in range(N):
                 for l in range(N):
-                    ferm_op += FermionOperator(f'{i}^ {j} {k}^ {l}', tensor[i, j, k, l])
+                    ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l])
 
     return ferm_op
 
@@ -115,10 +117,11 @@ def construct_majorana_terms_3_body_specific(ferm_op, N, ne, z, T):
 
     t_ferm_op = tensor_to_ferm_op(T, N)
 
-    param_op = (ferm_op
-                - z * (total_number_operator ** 3 - ne ** 3)
-                - t_ferm_op * (total_number_operator - ne)
-                )
+    param_op = (
+        ferm_op
+        - z * (total_number_operator**3 - ne**3)
+        - t_ferm_op * (total_number_operator - ne)
+    )
 
     majo = get_custom_majorana_operator(param_op)
 
@@ -127,13 +130,15 @@ def construct_majorana_terms_3_body_specific(ferm_op, N, ne, z, T):
 
 def generate_analytical_one_norm_3_body_specific(ferm_op, N, ne, idx_list):
     """Generate the analytical one-norm of a parameterized Majorana operator."""
-    z = sp.symbols('z')
-    T = symmetric_tensor_array_specific('T', N, idx_list)
+    z = sp.symbols("z")
+    T = symmetric_tensor_array_specific("T", N, idx_list)
 
     T_tensor = symmetric_tensor_from_triangle_specific(T, N, idx_list)
 
     # Construct the Majorana terms manually
-    majorana_terms = construct_majorana_terms_3_body_specific(ferm_op, N, ne, z, T_tensor )
+    majorana_terms = construct_majorana_terms_3_body_specific(
+        ferm_op, N, ne, z, T_tensor
+    )
 
     invariant_terms_counter = 0
 
@@ -143,11 +148,10 @@ def generate_analytical_one_norm_3_body_specific(ferm_op, N, ne, idx_list):
 
     # Compute the symbolic one-norm
     one_norm_expr = sum(
-        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if
-        term != ())
+        sp.Abs(coeff) for term, coeff in majorana_terms.terms.items() if term != ()
+    )
 
-    one_norm_func = sp.lambdify((z, T), one_norm_expr,
-                                modules=['numpy'])
+    one_norm_func = sp.lambdify((z, T), one_norm_expr, modules=["numpy"])
 
     print("Analytical 1-Norm Complete")
     return one_norm_func, one_norm_expr

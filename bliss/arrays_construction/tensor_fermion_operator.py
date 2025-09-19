@@ -47,9 +47,11 @@ def tensor_to_ferm_op(tensor, n):
             for k in range(n):
                 for l in range(n):
                     if (i, j, k, l) <= (l, k, j, i):
-                        ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}",
-                                                   tensor[i, j, k, l])
-                        ferm_op += FermionOperator(f"{l}^ {k} {j}^ {i}",
-                                                   tensor[l, k, j, i])
+                        ferm_op += FermionOperator(
+                            f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l]
+                        )
+                        ferm_op += FermionOperator(
+                            f"{l}^ {k} {j}^ {i}", tensor[l, k, j, i]
+                        )
 
     return ferm_op

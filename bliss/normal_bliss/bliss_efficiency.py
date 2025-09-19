@@ -1,4 +1,5 @@
 from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -67,29 +68,22 @@ def get_total_combs(tuple_list: List[tuple], smaller_body):
     return smaller_len * larger_len
 
 
-if __name__ == '__main__':
-    values = [
-        372,
-        372,
-        244,
-        322,
-        322,
-        352,
-        322,
-        322,
-        272,
-        372,
-        304
-    ]
+if __name__ == "__main__":
+    values = [372, 372, 244, 322, 322, 352, 322, 322, 272, 372, 304]
     indices = np.arange(len(values))  # X-axis positions
 
     # Plot bar chart
-    plt.bar(indices, values, color='green', alpha=0.7, label='[H, A] - K')
+    plt.bar(indices, values, color="green", alpha=0.7, label="[H, A] - K")
 
     # Add horizontal line
     threshold = 1344
-    plt.axhline(y=threshold, color='red', linestyle='--', linewidth=2,
-                label=f'H - K ({threshold})')
+    plt.axhline(
+        y=threshold,
+        color="red",
+        linestyle="--",
+        linewidth=2,
+        label=f"H - K ({threshold})",
+    )
 
     # Labels and title
     plt.xlabel("Different Anti-Hermitian Operators")
@@ -100,4 +94,3 @@ if __name__ == '__main__':
 
     # Show plot
     plt.show()
-

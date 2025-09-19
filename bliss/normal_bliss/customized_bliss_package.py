@@ -1,8 +1,10 @@
-from openfermion import FermionOperator
 import numpy as np
+from openfermion import FermionOperator
+
 from bliss.normal_bliss.customized_one_norm_func import (
+    construct_symmetric_tensor_specific,
     generate_analytical_one_norm_3_body_specific,
-    construct_symmetric_tensor_specific)
+)
 
 
 def get_param_num(n):
@@ -55,11 +57,11 @@ def construct_H_bliss_mu3_customizable(H, params, N, Ne, idx_list):
     result = H
 
     mu_3 = params[0]
-    t = params[1:1 + idx_len]
+    t = params[1 : 1 + idx_len]
 
     t_ferm = params_to_tensor_specific_op(t, N, idx_list)
 
-    result -= mu_3 * (total_number_operator ** 3 - Ne ** 3)
+    result -= mu_3 * (total_number_operator**3 - Ne**3)
     result -= t_ferm * (total_number_operator - Ne)
 
     return result, t_ferm * (total_number_operator - Ne)
@@ -75,11 +77,14 @@ def optimize_bliss_mu3_customizable(H, N, Ne, idx_list):
     :param idx_list:
     :return:
     """
-    one_norm_func, one_norm_expr = generate_analytical_one_norm_3_body_specific(H, N, Ne, idx_list)
+    one_norm_func, one_norm_expr = generate_analytical_one_norm_3_body_specific(
+        H, N, Ne, idx_list
+    )
     idx_len = len(idx_list)
+
     def optimization_wrapper(params):
         z_val = params[0]
-        t_val = params[1:1 + idx_len]
+        t_val = params[1 : 1 + idx_len]
 
         return one_norm_func(z_val, t_val)
 

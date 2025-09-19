@@ -53,6 +53,9 @@ pytest-cov
 black
 flake8
 mypy
+isort
+pre-commit
+bandit
 
 [docs]
 sphinx

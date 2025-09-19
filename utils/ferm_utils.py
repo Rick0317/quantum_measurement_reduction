@@ -1,5 +1,5 @@
-from openfermion import FermionOperator, normal_ordered, bravyi_kitaev
 import numpy as np
+from openfermion import FermionOperator, bravyi_kitaev, normal_ordered
 
 
 def chemist_ordered(fermion_operator):
@@ -31,37 +31,78 @@ def chemist_ordered(fermion_operator):
             # Possibly add new one-body term.
             if term[1][0] == term[2][0]:
                 new_one_body_term = (term[0], term[3])
-                chemist_ordered_operator += FermionOperator(new_one_body_term, coefficient)
+                chemist_ordered_operator += FermionOperator(
+                    new_one_body_term, coefficient
+                )
             # Reorder two-body term.
             new_two_body_term = (term[0], term[2], term[1], term[3])
             chemist_ordered_operator += FermionOperator(new_two_body_term, -coefficient)
         elif len(term) == 6:
             if term[2][0] == term[3][0]:
                 new_two_body_term1 = (term[0], term[1], term[4], term[5])
-                chemist_ordered_operator += chemist_ordered(FermionOperator(new_two_body_term1, coefficient))
+                chemist_ordered_operator += chemist_ordered(
+                    FermionOperator(new_two_body_term1, coefficient)
+                )
             if term[1][0] == term[3][0]:
                 new_two_body_term2 = (term[0], term[2], term[4], term[5])
-                chemist_ordered_operator += chemist_ordered(FermionOperator(new_two_body_term2, -coefficient))
+                chemist_ordered_operator += chemist_ordered(
+                    FermionOperator(new_two_body_term2, -coefficient)
+                )
             if term[2][0] == term[4][0]:
                 new_two_body_term3 = (term[0], term[3], term[1], term[5])
-                chemist_ordered_operator += FermionOperator(new_two_body_term3, coefficient)
+                chemist_ordered_operator += FermionOperator(
+                    new_two_body_term3, coefficient
+                )
             new_three_body_term = (term[0], term[3], term[1], term[4], term[2], term[5])
-            chemist_ordered_operator += FermionOperator(new_three_body_term, -coefficient)
+            chemist_ordered_operator += FermionOperator(
+                new_three_body_term, -coefficient
+            )
 
         elif len(term) == 8:
             if term[3][0] == term[4][0]:
-                new_three_body_term1 = (term[0], term[1], term[2], term[5], term[6], term[7])
-                chemist_ordered_operator += chemist_ordered(FermionOperator(new_three_body_term1, coefficient))
+                new_three_body_term1 = (
+                    term[0],
+                    term[1],
+                    term[2],
+                    term[5],
+                    term[6],
+                    term[7],
+                )
+                chemist_ordered_operator += chemist_ordered(
+                    FermionOperator(new_three_body_term1, coefficient)
+                )
             if term[2][0] == term[4][0]:
-                new_three_body_term2 = (term[0], term[1], term[3], term[5], term[6], term[7])
-                chemist_ordered_operator += chemist_ordered(FermionOperator(new_three_body_term2, -coefficient))
+                new_three_body_term2 = (
+                    term[0],
+                    term[1],
+                    term[3],
+                    term[5],
+                    term[6],
+                    term[7],
+                )
+                chemist_ordered_operator += chemist_ordered(
+                    FermionOperator(new_three_body_term2, -coefficient)
+                )
             if term[1][0] == term[4][0]:
-                new_three_body_term3 = (term[0], term[2], term[3], term[5], term[6], term[7])
-                chemist_ordered_operator += chemist_ordered(FermionOperator(new_three_body_term3, coefficient))
+                new_three_body_term3 = (
+                    term[0],
+                    term[2],
+                    term[3],
+                    term[5],
+                    term[6],
+                    term[7],
+                )
+                chemist_ordered_operator += chemist_ordered(
+                    FermionOperator(new_three_body_term3, coefficient)
+                )
 
             prefix_term = (term[0], term[4])
-            tale_op = FermionOperator((term[1], term[2], term[3], term[5], term[6], term[7]), -coefficient)
-            chemist_ordered_operator += FermionOperator(prefix_term, 1) * chemist_ordered(tale_op)
+            tale_op = FermionOperator(
+                (term[1], term[2], term[3], term[5], term[6], term[7]), -coefficient
+            )
+            chemist_ordered_operator += FermionOperator(
+                prefix_term, 1
+            ) * chemist_ordered(tale_op)
 
     return chemist_ordered_operator
 
@@ -77,17 +118,27 @@ def ferm_op_to_tensors(fermion_operator: FermionOperator, N):
         elif len(term) == 4:
             g2e[term[0][0], term[1][0], term[2][0], term[3][0]] = coefficient
         elif len(term) == 6:
-            t3e[term[0][0], term[1][0], term[2][0], term[3][0], term[4][0],
-            term[5][0]] = coefficient
+            t3e[
+                term[0][0], term[1][0], term[2][0], term[3][0], term[4][0], term[5][0]
+            ] = coefficient
         elif len(term) == 8:
-            q4e[term[0][0], term[1][0], term[2][0], term[3][0], term[4][0],
-            term[5][0], term[6][0], term[7][0]] = coefficient
+            q4e[
+                term[0][0],
+                term[1][0],
+                term[2][0],
+                term[3][0],
+                term[4][0],
+                term[5][0],
+                term[6][0],
+                term[7][0],
+            ] = coefficient
 
     return h1e, g2e, t3e, q4e
 
 
 def abs_of_dict_value(x):
     return np.abs(x[1])
+
 
 def ferm_to_qubit(H: FermionOperator):
     """
@@ -98,6 +149,5 @@ def ferm_to_qubit(H: FermionOperator):
     Hqub = bravyi_kitaev(H)
     Hqub -= Hqub.constant
     Hqub.compress()
-    Hqub.terms = dict(
-    sorted(Hqub.terms.items(), key=abs_of_dict_value, reverse=True))
+    Hqub.terms = dict(sorted(Hqub.terms.items(), key=abs_of_dict_value, reverse=True))
     return Hqub

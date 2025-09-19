@@ -3,10 +3,20 @@ This file checks the commutation relation between a Killer that annihilates
 the reference state (HF) and the product of unitary operators that were chosen
 prior to the current step.
 """
-from openfermion import FermionOperator as FO, get_sparse_operator as gso, bravyi_kitaev, normal_ordered
-from scipy.linalg import expm
+
 import random
+
 import numpy as np
+from openfermion import FermionOperator as FO
+from openfermion import (
+    bravyi_kitaev,
+)
+from openfermion import get_sparse_operator as gso
+from openfermion import (
+    normal_ordered,
+)
+from scipy.linalg import expm
+
 from state_perparation.parametrized_state import get_single_unitary_parametered_state
 
 
@@ -26,7 +36,9 @@ def is_unitary(U, tol=1e-10):
     identity = np.eye(U.shape[0])
 
     # Check if U†U ≈ I and UU† ≈ I
-    return np.allclose(U_dag @ U, identity, atol=tol) and np.allclose(U @ U_dag, identity, atol=tol)
+    return np.allclose(U_dag @ U, identity, atol=tol) and np.allclose(
+        U @ U_dag, identity, atol=tol
+    )
 
 
 if __name__ == "__main__":
@@ -46,4 +58,3 @@ if __name__ == "__main__":
     killer = FO(f"{j}^ {b}")
     generator_matrix = gso(bravyi_kitaev(killer), N).toarray()
     print(generator_matrix @ parametrized_state)
-

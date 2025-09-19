@@ -1,8 +1,11 @@
-from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
+import re
+
 import numpy as np
 import sympy as sp
-import re
 from openfermion import FermionOperator
+
+from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
+
 
 def symmetric_tensor_array(name, n):
     symmetric_tensor = []
@@ -48,10 +51,12 @@ def tensor_to_ferm_op(tensor, n):
             for k in range(n):
                 for l in range(n):
                     if (i, j, k, l) <= (l, k, j, i):
-                        ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}",
-                                                   tensor[i, j, k, l])
-                        ferm_op += FermionOperator(f"{l}^ {k} {j}^ {i}",
-                                                   tensor[l, k, j, i])
+                        ferm_op += FermionOperator(
+                            f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l]
+                        )
+                        ferm_op += FermionOperator(
+                            f"{l}^ {k} {j}^ {i}", tensor[l, k, j, i]
+                        )
 
     return ferm_op
 
@@ -68,18 +73,17 @@ def filter_indices_iterative_non_overlap(H, N, Ne, j, b):
     The list should only contain N - 2 elements
     """
 
-    occupation = ([0 for _ in range(N - Ne)] + [1 for _ in range(Ne)])
+    occupation = [0 for _ in range(N - Ne)] + [1 for _ in range(Ne)]
 
     sites_list = [p for p in range(N) if p != j and p != b]
 
     idx_lists = []
     for i in sites_list:
         print(i)
-        killer_coeff_candidate = symmetric_tensor_array(f'T{i}', N)
+        killer_coeff_candidate = symmetric_tensor_array(f"T{i}", N)
 
         # Tensor representation of the coefficient candidates
         tensor_repr = symmetric_tensor(killer_coeff_candidate, N)
-
 
         # Get the fermion operator representation
         tensor_ferm_op = tensor_to_ferm_op(tensor_repr, N)
@@ -109,9 +113,10 @@ def filter_indices_iterative_non_overlap(H, N, Ne, j, b):
             all_terms_counter += 1
             if term in killer_keys:
                 expre = killer_in_majo.terms[term]
-                matches = re.findall(f'T{i}_(\\d{{4}})', str(expre))
-                result = {tuple(map(int, match)) for match in
-                          matches}  # Use set comprehension
+                matches = re.findall(f"T{i}_(\\d{{4}})", str(expre))
+                result = {
+                    tuple(map(int, match)) for match in matches
+                }  # Use set comprehension
 
                 if coeff != 0:
                     candidates_counter += 1

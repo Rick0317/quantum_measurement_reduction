@@ -1,8 +1,11 @@
-from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
+import re
+
 import numpy as np
 import sympy as sp
-import re
 from openfermion import FermionOperator
+
+from bliss.majorana.custom_majorana_transform import get_custom_majorana_operator
+
 
 def symmetric_tensor_array(name, n):
     symmetric_tensor = []
@@ -31,8 +34,8 @@ def symmetric_tensor(T, n):
         for j in range(n):
             for k in range(n):
                 for l in range(n):
-                        tensor[i, j, k, l] = T[idx]
-                        idx += 1
+                    tensor[i, j, k, l] = T[idx]
+                    idx += 1
 
     return tensor
 
@@ -44,8 +47,7 @@ def tensor_to_ferm_op(tensor, n):
         for j in range(n):
             for k in range(n):
                 for l in range(n):
-                    ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}",
-                                               tensor[i, j, k, l])
+                    ferm_op += FermionOperator(f"{i}^ {j} {k}^ {l}", tensor[i, j, k, l])
 
     return ferm_op
 
@@ -66,11 +68,10 @@ def filter_indices_iterative_HF(H, N, Ne):
     for i in range(N):
         print(i)
         # The killer coefficient candidates. We are going to remove unncessary ones from this
-        killer_coeff_candidate = symmetric_tensor_array(f'T{i}', N)
+        killer_coeff_candidate = symmetric_tensor_array(f"T{i}", N)
 
         # Tensor representation of the coefficient candidates
         tensor_repr = symmetric_tensor(killer_coeff_candidate, N)
-
 
         # Get the fermion operator representation
         tensor_ferm_op = tensor_to_ferm_op(tensor_repr, N)
@@ -100,9 +101,10 @@ def filter_indices_iterative_HF(H, N, Ne):
             all_terms_counter += 1
             if term in killer_keys:
                 expre = killer_in_majo.terms[term]
-                matches = re.findall(f'T{i}_(\\d{{4}})', str(expre))
-                result = {tuple(map(int, match)) for match in
-                          matches}  # Use set comprehension
+                matches = re.findall(f"T{i}_(\\d{{4}})", str(expre))
+                result = {
+                    tuple(map(int, match)) for match in matches
+                }  # Use set comprehension
 
                 if coeff != 0:
                     candidates_counter += 1

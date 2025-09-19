@@ -1,21 +1,25 @@
-from openfermion import (
-    get_sparse_operator as gso,
-    get_ground_state as ggs,
-    variance,
-    expectation,
-    bravyi_kitaev,
-    QubitOperator
-)
+from itertools import product
+
 import numpy as np
+from openfermion import (
+    QubitOperator,
+    bravyi_kitaev,
+    expectation,
+)
+from openfermion import get_ground_state as ggs
+from openfermion import get_sparse_operator as gso
+from openfermion import (
+    variance,
+)
+
 from entities.paulis import PauliString, pauli_ops_to_qop
 from symplectic_vector_space.space_F_definition import SpaceFVector, vector_2_pauli
-from itertools import product
 
 
 def is_z_string(pauli_product):
     """Check if a Pauli product is a Z-string."""
     for pauli in pauli_product:
-        if pauli not in {'Z'}:
+        if pauli not in {"Z"}:
             return False
     return True
 
@@ -28,33 +32,33 @@ def multiply_pauli_terms(term1, term2):
     # Merge the two terms
     all_qubits = set(term1.keys()).union(set(term2.keys()))
     for qubit in all_qubits:
-        op1 = term1.get(qubit, 'I')
-        op2 = term2.get(qubit, 'I')
+        op1 = term1.get(qubit, "I")
+        op2 = term2.get(qubit, "I")
 
         # Multiply the Pauli operators
-        if op1 == 'I':
+        if op1 == "I":
             result[qubit] = op2
-        elif op2 == 'I':
+        elif op2 == "I":
             result[qubit] = op1
         elif op1 == op2:
-            result[qubit] = 'I'
-        elif op1 == 'X' and op2 == 'Y':
-            result[qubit] = 'Z'
+            result[qubit] = "I"
+        elif op1 == "X" and op2 == "Y":
+            result[qubit] = "Z"
             phase *= 1j
-        elif op1 == 'Y' and op2 == 'X':
-            result[qubit] = 'Z'
+        elif op1 == "Y" and op2 == "X":
+            result[qubit] = "Z"
             phase *= -1j
-        elif op1 == 'X' and op2 == 'Z':
-            result[qubit] = 'Y'
+        elif op1 == "X" and op2 == "Z":
+            result[qubit] = "Y"
             phase *= -1j
-        elif op1 == 'Z' and op2 == 'X':
-            result[qubit] = 'Y'
+        elif op1 == "Z" and op2 == "X":
+            result[qubit] = "Y"
             phase *= 1j
-        elif op1 == 'Y' and op2 == 'Z':
-            result[qubit] = 'X'
+        elif op1 == "Y" and op2 == "Z":
+            result[qubit] = "X"
             phase *= 1j
-        elif op1 == 'Z' and op2 == 'Y':
-            result[qubit] = 'X'
+        elif op1 == "Z" and op2 == "Y":
+            result[qubit] = "X"
             phase *= -1j
 
     return result, phase
@@ -65,13 +69,15 @@ def find_z_string_combination(pauli_pool: list[QubitOperator], pauli):
     for fragment in pauli_pool:
         term, coeff = list(fragment.terms.items())[0]
         # Multiply the term with `pauli`
-        product_term, phase = multiply_pauli_terms(dict(term), dict(
-            list(pauli.terms.items())[0][0]))
+        product_term, phase = multiply_pauli_terms(
+            dict(term), dict(list(pauli.terms.items())[0][0])
+        )
 
         # Check if the result is a Z-string
         if is_z_string(product_term):
             True
     return False
+
 
 def matrix_J(n):
     # Create an n x n zero matrix
@@ -154,7 +160,7 @@ def get_variance_reduction(c, d_of_pauli, var_of_pauli):
     :return:
     """
     first_term = 2 * c * d_of_pauli
-    second_term = c ** 2 * var_of_pauli
+    second_term = c**2 * var_of_pauli
     return first_term - second_term
 
 
@@ -183,17 +189,20 @@ def select_paulis(frag_combs, original_decomp, N, psi):
         frag_b = original_decomp[index_b]
 
         # Get the matrix in the linear symplectic vector space F
-        matrix_M = [SpaceFVector(PauliString(term), N).get_vector() for term in
-                    frag_a.terms]
-        matrix_M += [SpaceFVector(PauliString(term), N).get_vector() for term in
-                     frag_b.terms]
+        matrix_M = [
+            SpaceFVector(PauliString(term), N).get_vector() for term in frag_a.terms
+        ]
+        matrix_M += [
+            SpaceFVector(PauliString(term), N).get_vector() for term in frag_b.terms
+        ]
 
         exe_matrix_M = np.array(matrix_M)
         n_cols = exe_matrix_M.shape[1]
 
         # Filter binary vectors in the null space of exe_matrix_M
         null_space_vectors = [
-            np.array(vec) for vec in product([1, 0], repeat=n_cols)
+            np.array(vec)
+            for vec in product([1, 0], repeat=n_cols)
             if np.all(np.dot(exe_matrix_M, vec) % 2 == 0)
         ]
 
@@ -209,26 +218,36 @@ def select_paulis(frag_combs, original_decomp, N, psi):
                 m_a, m_b = var_psi_ha / variance_sum, var_psi_hb / variance_sum
                 mu = m_a * m_b / (m_a + m_b)
 
-                cov_a_pauli = expectation(gso(frag_a, N) * gso(qubit_op, N),
-                                          psi) - expectation(gso(frag_a, N),
-                                                             psi) * expectation(
-                    gso(qubit_op, N), psi)
-                cov_b_pauli = expectation(gso(frag_b, N) * gso(qubit_op, N),
-                                          psi) - expectation(gso(frag_b, N),
-                                                             psi) * expectation(
-                    gso(qubit_op, N), psi)
+                cov_a_pauli = expectation(
+                    gso(frag_a, N) * gso(qubit_op, N), psi
+                ) - expectation(gso(frag_a, N), psi) * expectation(
+                    gso(qubit_op, N), psi
+                )
+                cov_b_pauli = expectation(
+                    gso(frag_b, N) * gso(qubit_op, N), psi
+                ) - expectation(gso(frag_b, N), psi) * expectation(
+                    gso(qubit_op, N), psi
+                )
 
-                d_of_pauli = (m_a * cov_b_pauli - m_b * cov_a_pauli) / (
-                            m_a + m_b)
+                d_of_pauli = (m_a * cov_b_pauli - m_b * cov_a_pauli) / (m_a + m_b)
                 c = d_of_pauli / var_psi_pauli
-                variance_reduction = get_variance_reduction(c, d_of_pauli,
-                                                            var_psi_pauli) / mu
+                variance_reduction = (
+                    get_variance_reduction(c, d_of_pauli, var_psi_pauli) / mu
+                )
 
                 if variance_reduction > 1e-5:
                     print(f"Variance reduction: {variance_reduction}")
                     pauli_added_combs.append((c, qubit_op, index_a, index_b))
 
-        del qubit_op, pauli_op, frag_a, frag_b, matrix_M, exe_matrix_M, null_space_vectors
+        del (
+            qubit_op,
+            pauli_op,
+            frag_a,
+            frag_b,
+            matrix_M,
+            exe_matrix_M,
+            null_space_vectors,
+        )
 
     return pauli_added_combs
 
@@ -249,7 +268,7 @@ def select_combs(psi, N, original_decomp):
 
     score_board = {}
     for a in range(n_frag):
-        for b in range(a+1, n_frag):
+        for b in range(a + 1, n_frag):
             var_a = vars[a]
             var_b = vars[b]
 
@@ -258,11 +277,9 @@ def select_combs(psi, N, original_decomp):
             score = p * (np.sqrt(var_a * var_b)) / (np.sqrt(var_a) + np.sqrt(var_b))
             score_board[(a, b)] = score
 
-    sorted_items = sorted(score_board.items(), key=lambda item: item[1],
-                          reverse=True)
+    sorted_items = sorted(score_board.items(), key=lambda item: item[1], reverse=True)
 
-    top_50_count = len(score_board) // 4 + (
-        1 if len(score_board) % 2 != 0 else 0)
+    top_50_count = len(score_board) // 4 + (1 if len(score_board) % 2 != 0 else 0)
 
     top_keys = [key for key, value in sorted_items[:30]]
     print(top_keys)
@@ -297,8 +314,8 @@ def variance_metric(H, decomp, N):
 
     vars = np.zeros(len(decomp), dtype=np.complex128)
     for i, frag in enumerate(decomp):
-        vars[i] = variance( gso(frag, N), psi )
-    return np.sum((vars)**(1/2))**2
+        vars[i] = variance(gso(frag, N), psi)
+    return np.sum((vars) ** (1 / 2)) ** 2
 
 
 def abs_of_dict_value(x):
@@ -316,8 +333,8 @@ def copy_hamiltonian(H):
 
 
 def load_hamiltonian(moltag):
-    filename = f'../SolvableQubitHamiltonians/ham_lib/h4_sto-3g.pkl'
-    with open(filename, 'rb') as f:
+    filename = f"../SolvableQubitHamiltonians/ham_lib/h4_sto-3g.pkl"
+    with open(filename, "rb") as f:
         Hfer = pickle.load(f)
     Hqub = bravyi_kitaev(Hfer)
     Hqub -= Hqub.constant
