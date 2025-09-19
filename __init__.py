@@ -2,13 +2,13 @@
 Quantum Measurement Reduction Package
 
 A comprehensive Python package for implementing various quantum measurement reduction
-techniques including Ghost Pauli, Shared Pauli, Virial relations, and other methods
+techniques including Ghost Pauli, Shared Pauli, BLISS optimization, and other methods
 to reduce measurement variance in quantum algorithms.
 
 This package provides:
 - Ghost Pauli techniques for variance reduction
 - Shared Pauli methods for measurement optimization
-- Virial relation implementations
+- BLISS optimization techniques
 - Symplectic vector space utilities
 - Core quantum data structures and utilities
 
@@ -29,7 +29,6 @@ from . import (
     symplectic_vector_space,
     tapering,
     utils,
-    virial,
 )
 from .bliss import bliss_three_body_indices_filtered, bliss_two_body
 from .entities import PauliOp, PauliString
@@ -57,7 +56,6 @@ __all__ = [
     "symplectic_vector_space",
     "utils",
     "tapering",
-    "virial",
     "bliss",
     # Key functions
     "update_decomp_w_ghost_paulis_sparse",

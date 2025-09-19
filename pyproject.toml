@@ -103,7 +103,7 @@ Repository = "https://github.com/yourusername/quantum_measurement_reduction.git"
 "Bug Tracker" = "https://github.com/yourusername/quantum_measurement_reduction/issues"
 
 [tool.setuptools]
-packages = ["ghost_pauli", "shared_pauli", "entities", "symplectic_vector_space", "utils", "tapering", "virial", "bliss"]
+packages = ["ghost_pauli", "shared_pauli", "entities", "symplectic_vector_space", "utils", "tapering", "bliss"]
 
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.md", "*.yml", "*.yaml"]

@@ -33,9 +33,6 @@ verify_installation.py
 ./utils/linear_programming.py
 ./utils/math_utils.py
 ./utils/physicist_to_chemist.py
-./virial/__init__.py
-./virial/guide.md
-./virial/hypervirial_relation.py
 .github/workflows/ci.yml
 .idea/.gitignore
 .idea/MeasurementReduction.iml
