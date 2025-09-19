@@ -1,8 +1,9 @@
-from bliss.normal_bliss.bliss_package import *
-from scipy.optimize import minimize
 from openfermion import FermionOperator as FO
-from bliss.normal_bliss.indices_filter import filter_indices
+from scipy.optimize import minimize
+
+from bliss.normal_bliss.bliss_package import *
 from bliss.normal_bliss.customized_bliss_package import *
+from bliss.normal_bliss.indices_filter import filter_indices
 
 
 def _copy_ferm_hamiltonian(H: FO):
@@ -24,17 +25,23 @@ def bliss_two_body(H, N, Ne):
     :return: BLISS applied Hamiltonian H - K
     """
     H_input = _copy_ferm_hamiltonian(H)
-    optimization_wrapper, initial_guess = optimization_bliss_mu12_o1(
-        H_input, N, Ne)
+    optimization_wrapper, initial_guess = optimization_bliss_mu12_o1(H_input, N, Ne)
 
-    res = minimize(optimization_wrapper, initial_guess, method='Powell',
-                   options={'disp': True, 'maxiter': 100000})
+    res = minimize(
+        optimization_wrapper,
+        initial_guess,
+        method="Powell",
+        options={"disp": True, "maxiter": 100000},
+    )
 
     x = res.x
     H_before_modification = _copy_ferm_hamiltonian(H)
-    bliss_output = construct_H_bliss_m12_o1(H_before_modification,
-                                            x, N, Ne,
-                                            )
+    bliss_output = construct_H_bliss_m12_o1(
+        H_before_modification,
+        x,
+        N,
+        Ne,
+    )
     return bliss_output
 
 
@@ -51,14 +58,20 @@ def bliss_three_body_indices_filtered(H, N, Ne):
         H_input = _copy_ferm_hamiltonian(H)
 
         optimization_wrapper, initial_guess = optimize_bliss_mu3_customizable(
-            H_input, N, Ne, two_body_list)
+            H_input, N, Ne, two_body_list
+        )
 
-        res = minimize(optimization_wrapper, initial_guess, method='Powell',
-                       options={'disp': True, 'maxiter': 100000})
+        res = minimize(
+            optimization_wrapper,
+            initial_guess,
+            method="Powell",
+            options={"disp": True, "maxiter": 100000},
+        )
 
         H_before_modification = _copy_ferm_hamiltonian(H)
         bliss_output, killer = construct_H_bliss_mu3_customizable(
-            H_before_modification, res.x, N, Ne, two_body_list)
+            H_before_modification, res.x, N, Ne, two_body_list
+        )
 
         return bliss_output
     else:
