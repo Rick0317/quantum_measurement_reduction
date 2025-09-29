@@ -76,3 +76,31 @@ def bliss_three_body_indices_filtered(H, N, Ne):
         return bliss_output
     else:
         return H
+
+def bliss_two_body_all_symmetries(H, N, Ne):
+    """
+    Apply BLISS to two body Hamiltonian with all symmetries used.
+    :param H: The Hamiltonian in FermionOperator format.
+    :param N: The number of qubits/ spin-orbitals
+    :param Ne: The number of electrons
+    :return: BLISS applied Hamiltonian H - K
+    """
+    H_input = _copy_ferm_hamiltonian(H)
+    optimization_wrapper, initial_guess = optimization_bliss_mu12_all_symmetries(H_input, N, Ne)
+
+    res = minimize(
+        optimization_wrapper,
+        initial_guess,
+        method="Powell",
+        options={"disp": True, "maxiter": 100000},
+    )
+
+    x = res.x
+    H_before_modification = _copy_ferm_hamiltonian(H)
+    bliss_output = construct_H_bliss_mu12_all_symmetries(
+        H_before_modification,
+        x,
+        N,
+        Ne,
+    )
+    return bliss_output
