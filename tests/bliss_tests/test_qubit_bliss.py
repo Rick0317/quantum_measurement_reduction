@@ -8,7 +8,7 @@ import sys
 import os
 
 # Add the project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from openfermion import FermionOperator
 from bliss.qubit_bliss import bliss_qubit_two_body, compare_fermion_qubit_bliss

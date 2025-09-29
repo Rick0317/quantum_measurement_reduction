@@ -9,7 +9,7 @@ import pickle
 import time
 
 # Add the project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from openfermion import FermionOperator, InteractionOperator, get_fermion_operator
 from bliss.qubit_bliss import bliss_qubit_two_body, compare_fermion_qubit_bliss, compute_one_norm_qubit

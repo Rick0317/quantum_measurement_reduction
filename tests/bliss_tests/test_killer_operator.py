@@ -12,7 +12,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from openfermion import FermionOperator, InteractionOperator, get_fermion_operator
-from killer_operator_bliss import (
+from bliss.qubit_bliss.killer_operator_bliss import (
     bliss_killer_operator_qubit,
     compare_killer_bliss_results,
     multi_mode_killer_bliss,
@@ -142,7 +142,7 @@ def analyze_killer_operator_components(filename, mode, mapping='bravyi_kitaev'):
         molecule = get_molecule_info(filename)
         
         # Convert to qubit space
-        from killer_operator_bliss import fermion_to_qubit_bliss
+        from bliss.qubit_bliss.killer_operator_bliss import fermion_to_qubit_bliss
         H_qubit = fermion_to_qubit_bliss(H_fermion, mapping)
         
         # Create dummy parameters for analysis
@@ -191,7 +191,7 @@ def main():
     
     # Test multiple modes
     print("\n2. Testing multiple killer operators")
-    modes = [0, 1, 2, 3]  # Test first 4 modes
+    modes = [4, 5, 6, 7]  # Test first 4 modes
     results = test_multiple_modes(filename, modes, mapping='bravyi_kitaev')
     
     # Analyze structure

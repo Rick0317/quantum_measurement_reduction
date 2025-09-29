@@ -49,29 +49,46 @@ def fermion_to_qubit_bliss(H_fermion: FermionOperator, mapping='bravyi_kitaev'):
     return H_qubit
 
 
-def construct_parameterized_operator_qubit(params, N, mapping='bravyi_kitaev'):
+def construct_parameterized_operator_qubit(params, N, mapping='bravyi_kitaev', operator_type='one_body'):
     """
     Construct a parameterized operator O in qubit space.
     
     Args:
-        params: Parameters for the operator (N*(N+1)/2 elements for symmetric matrix)
+        params: Parameters for the operator
         N: Number of qubits/spin-orbitals
         mapping: Fermion-to-qubit mapping used
+        operator_type: 'one_body' for 1-body operator or 'three_body' for 3-body operator
     
     Returns:
         QubitOperator representing the parameterized operator O
     """
-    # Create symmetric matrix from upper triangular parameters
-    sym_matrix = np.zeros((N, N))
-    upper_tri_indices = np.triu_indices(N)
-    sym_matrix[upper_tri_indices] = params
-    sym_matrix = sym_matrix + sym_matrix.T - np.diag(np.diag(sym_matrix))
+    if operator_type == 'one_body':
+        # For 1-body operator: O = Σᵢ oᵢ aᵢ†
+        # Create fermionic parameterized operator with only creation operators
+        param_fermion = FermionOperator()
+        for i in range(N):
+            if i < len(params):
+                param_fermion += FermionOperator(f"{i}^", params[i])
     
-    # Create fermionic parameterized operator
-    param_fermion = FermionOperator()
-    for i in range(N):
-        for j in range(N):
-            param_fermion += FermionOperator(f"{i}^ {j}", sym_matrix[i, j])
+    elif operator_type == 'three_body':
+        # For 3-body operator: O = Σᵢⱼₖ oᵢⱼₖ aᵢ† aⱼ† aₖ†
+        # Create fermionic parameterized operator with three creation operators
+        param_fermion = FermionOperator()
+        idx = 0
+        for i in range(N):
+            for j in range(N):
+                for k in range(N):
+                    if idx < len(params):
+                        param_fermion += FermionOperator(f"{i}^ {j}^ {k}", params[idx])
+                        idx += 1
+                    else:
+                        break
+                if idx >= len(params):
+                    break
+            if idx >= len(params):
+                break
+    else:
+        raise ValueError("operator_type must be 'one_body' or 'three_body'")
     
     # Convert to qubit space
     param_qubit = fermion_to_qubit_bliss(param_fermion, mapping)
@@ -100,7 +117,7 @@ def construct_annihilation_operator_qubit(mode, N, mapping='bravyi_kitaev'):
     return annihilate_qubit
 
 
-def construct_killer_operator_qubit(params, mode, N, mapping='bravyi_kitaev'):
+def construct_killer_operator_qubit(params, mode, N, mapping='bravyi_kitaev', operator_type='one_body'):
     """
     Construct the killer operator (O a_i)_q in qubit space.
     
@@ -109,12 +126,13 @@ def construct_killer_operator_qubit(params, mode, N, mapping='bravyi_kitaev'):
         mode: The mode index for the annihilation operator
         N: Number of qubits/spin-orbitals
         mapping: Fermion-to-qubit mapping used
+        operator_type: 'one_body' for 1-body operator or 'three_body' for 3-body operator
     
     Returns:
         QubitOperator representing (O a_i)_q
     """
     # Construct parameterized operator O
-    O_qubit = construct_parameterized_operator_qubit(params, N, mapping)
+    O_qubit = construct_parameterized_operator_qubit(params, N, mapping, operator_type)
     
     # Construct annihilation operator a_i
     a_qubit = construct_annihilation_operator_qubit(mode, N, mapping)
@@ -125,7 +143,7 @@ def construct_killer_operator_qubit(params, mode, N, mapping='bravyi_kitaev'):
     return killer_qubit
 
 
-def construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping='bravyi_kitaev'):
+def construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping='bravyi_kitaev', operator_type='one_body'):
     """
     Construct BLISS Hamiltonian H - K using killer operator (O a_i)_q.
     
@@ -136,6 +154,7 @@ def construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping='bravyi
         N: Number of qubits/spin-orbitals
         Ne: Number of electrons
         mapping: Fermion-to-qubit mapping used
+        operator_type: 'one_body' for 1-body operator or 'three_body' for 3-body operator
     
     Returns:
         QubitOperator representing H - K
@@ -143,7 +162,7 @@ def construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping='bravyi
     result = _copy_qubit_hamiltonian(H_qubit)
     
     # Construct killer operator (O a_i)_q
-    killer_qubit = construct_killer_operator_qubit(params, mode, N, mapping)
+    killer_qubit = construct_killer_operator_qubit(params, mode, N, mapping, operator_type)
     
     # Apply BLISS transformation: H - K
     result -= killer_qubit
@@ -164,7 +183,7 @@ def compute_one_norm_qubit(H_qubit):
     return sum(abs(coeff) for coeff in H_qubit.terms.values())
 
 
-def optimization_wrapper_killer_qubit(H_qubit, mode, N, Ne, mapping='bravyi_kitaev'):
+def optimization_wrapper_killer_qubit(H_qubit, mode, N, Ne, mapping='bravyi_kitaev', operator_type='one_body'):
     """
     Create optimization wrapper for killer operator BLISS.
     
@@ -174,22 +193,29 @@ def optimization_wrapper_killer_qubit(H_qubit, mode, N, Ne, mapping='bravyi_kita
         N: Number of qubits/spin-orbitals
         Ne: Number of electrons
         mapping: Fermion-to-qubit mapping used
+        operator_type: 'one_body' for 1-body operator or 'three_body' for 3-body operator
     
     Returns:
         tuple: (optimization_function, initial_guess)
     """
     def optimization_function(params):
-        H_bliss = construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping)
+        H_bliss = construct_H_bliss_killer_qubit(H_qubit, params, mode, N, Ne, mapping, operator_type)
         return compute_one_norm_qubit(H_bliss)
     
     # Initial guess: parameters for the parameterized operator O
-    # Use N*(N+1)/2 parameters for symmetric matrix
-    initial_guess = np.random.random(int(N * (N + 1) // 2)) * 0.01
+    if operator_type == 'one_body':
+        # Use N parameters for creation operators
+        initial_guess = np.random.random(N) * 0.01
+    elif operator_type == 'three_body':
+        # Use N^3 parameters for three creation operators
+        initial_guess = np.random.random(N**3) * 0.001
+    else:
+        raise ValueError("operator_type must be 'one_body' or 'three_body'")
     
     return optimization_function, initial_guess
 
 
-def bliss_killer_operator_qubit(H_fermion, mode, N, Ne, mapping='bravyi_kitaev'):
+def bliss_killer_operator_qubit(H_fermion, mode, N, Ne, mapping='bravyi_kitaev', operator_type='one_body'):
     """
     Apply BLISS using killer operator (O a_i)_q to a fermionic Hamiltonian.
     
@@ -199,6 +225,7 @@ def bliss_killer_operator_qubit(H_fermion, mode, N, Ne, mapping='bravyi_kitaev')
         N: Number of qubits/spin-orbitals
         Ne: Number of electrons
         mapping: Fermion-to-qubit mapping ('bravyi_kitaev' or 'jordan_wigner')
+        operator_type: 'one_body' for 1-body operator or 'three_body' for 3-body operator
     
     Returns:
         QubitOperator: BLISS-optimized Hamiltonian in qubit space
@@ -208,7 +235,7 @@ def bliss_killer_operator_qubit(H_fermion, mode, N, Ne, mapping='bravyi_kitaev')
     
     # Create optimization wrapper
     optimization_wrapper, initial_guess = optimization_wrapper_killer_qubit(
-        H_qubit, mode, N, Ne, mapping
+        H_qubit, mode, N, Ne, mapping, operator_type
     )
     
     # Optimize
@@ -221,7 +248,7 @@ def bliss_killer_operator_qubit(H_fermion, mode, N, Ne, mapping='bravyi_kitaev')
     
     # Construct final BLISS Hamiltonian
     H_bliss_qubit = construct_H_bliss_killer_qubit(
-        H_qubit, res.x, mode, N, Ne, mapping
+        H_qubit, res.x, mode, N, Ne, mapping, operator_type
     )
     
     return H_bliss_qubit
