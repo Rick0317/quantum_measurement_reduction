@@ -31,7 +31,12 @@ def bliss_two_body(H, N, Ne):
         optimization_wrapper,
         initial_guess,
         method="Powell",
-        options={"disp": True, "maxiter": 100000},
+        options={
+            "disp": False, 
+            "maxiter": 100000,
+            "ftol": 1e-12,
+            "xtol": 1e-12
+        },
     )
 
     x = res.x
